@@ -437,6 +437,58 @@ input, textarea { font-family: inherit; }
   padding: 2px 8px;
   border-radius: 999px;
 }
+.discount-tiers {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+.discount-tier {
+  position: relative;
+  text-align: center;
+  padding: 14px 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--sage-line);
+  background: #fff;
+  transition: all 0.2s;
+}
+.discount-tier.active {
+  border-color: var(--sage-accent);
+  background: #eef5ef;
+}
+.discount-tier.current {
+  border-color: var(--sage-warm);
+  background: #fff5e6;
+  box-shadow: 0 0 0 2px rgba(196, 137, 111, 0.2);
+}
+.tier-pct {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  color: var(--sage-muted);
+  font-weight: 700;
+}
+.discount-tier.active .tier-pct { color: var(--sage-accent); }
+.discount-tier.current .tier-pct { color: var(--sage-warm); }
+.tier-label {
+  font-size: 0.68rem;
+  color: var(--sage-muted);
+  margin-top: 2px;
+}
+.tier-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--sage-accent);
+  color: #fff;
+  font-size: 0.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .course-badge-discount {
   position: absolute;
   bottom: 10px;

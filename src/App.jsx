@@ -766,6 +766,31 @@ function Courses() {
           )
         })}
       </div>
+
+      <div className="card" style={{ marginTop: 12 }}>
+        <h2>Bundle & Save</h2>
+        <p className="sub">The more you learn, the more you save. Discounts apply automatically.</p>
+        <div className="discount-tiers">
+          <div className={`discount-tier ${paidOwned >= 1 ? 'active' : ''} ${paidOwned === 1 ? 'current' : ''}`}>
+            <div className="tier-pct">10%</div>
+            <div className="tier-label">After 1st course</div>
+            {paidOwned >= 1 && <div className="tier-check">✓</div>}
+          </div>
+          <div className={`discount-tier ${paidOwned >= 2 ? 'active' : ''} ${paidOwned === 2 ? 'current' : ''}`}>
+            <div className="tier-pct">15%</div>
+            <div className="tier-label">After 2nd course</div>
+            {paidOwned >= 2 && <div className="tier-check">✓</div>}
+          </div>
+          <div className={`discount-tier ${paidOwned >= 3 ? 'active' : ''} ${paidOwned === 3 ? 'current' : ''}`}>
+            <div className="tier-pct">25%</div>
+            <div className="tier-label">After 3rd course</div>
+            {paidOwned >= 3 && <div className="tier-check">✓</div>}
+          </div>
+        </div>
+        {paidOwned === 0 && <p className="sub" style={{ marginTop: 10, marginBottom: 0 }}>Purchase your first course to start unlocking discounts!</p>}
+        {paidOwned > 0 && paidOwned < 3 && <p className="sub" style={{ marginTop: 10, marginBottom: 0 }}>You're getting {discountPct}% off — {3 - paidOwned} more course{3 - paidOwned > 1 ? 's' : ''} to unlock 25%!</p>}
+        {paidOwned >= 3 && <p className="sub" style={{ marginTop: 10, marginBottom: 0 }}>You've reached the maximum 25% discount on all courses!</p>}
+      </div>
     </>
   )
 }
