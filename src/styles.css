@@ -416,3 +416,36 @@ input, textarea { font-family: inherit; }
 
 .tips-list { padding-left: 20px; margin: 0; color: var(--sage-ink); font-size: 0.88rem; line-height: 1.7; }
 .tips-list li { margin-bottom: 4px; }
+
+/* ----- Discount elements ----- */
+.discount-banner {
+  background: linear-gradient(135deg, #fff5e6, #fff0d9);
+  border: 1px solid #f0d9a8;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  font-size: 0.88rem;
+  color: var(--sage-ink);
+  text-align: center;
+}
+.discount-tag {
+  display: inline-block;
+  background: var(--sage-warm);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.course-badge-discount {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: #fff5e6;
+  color: var(--sage-warm);
+  border: 1px solid var(--sage-warm);
+}

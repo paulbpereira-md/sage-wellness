@@ -630,6 +630,15 @@ function Courses() {
     storage.set('courses.enrolled', next)
   }
 
+  // Volume discount: the more paid courses you own, the bigger the discount on the next one
+  const paidOwned = enrolled.filter(id => { const c = COURSES.find(x => x.id === id); return c && !c.free }).length
+  const discountPct = paidOwned >= 3 ? 25 : paidOwned >= 2 ? 15 : paidOwned >= 1 ? 10 : 0
+  const applyDiscount = (price) => {
+    if (discountPct === 0) return { final: price, saved: 0 }
+    const final = Math.round(price * (1 - discountPct / 100) * 100) / 100
+    return { final, saved: Math.round((price - final) * 100) / 100 }
+  }
+
   if (detailId) {
     const c = COURSES.find(x => x.id === detailId)
     if (!c) { backToBrowse(); return null }
@@ -680,14 +689,33 @@ function Courses() {
               </button>
             </>
           ) : (
-            <>
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', color: 'var(--sage-accent)' }}>${c.price}</div>
-              <div className="sub" style={{ marginBottom: 12 }}>One-time payment · Lifetime access.</div>
-              <button className="btn full warm" disabled>Checkout coming soon</button>
-              <p className="sub" style={{ marginTop: 10, marginBottom: 0, fontSize: '0.78rem' }}>
-                Paid checkout needs Stripe setup. Free lessons are unlocked above.
-              </p>
-            </>
+            (() => {
+              const { final, saved } = applyDiscount(c.price)
+              const hasDiscount = discountPct > 0 && !isEnrolled
+              return (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                    {hasDiscount && (
+                      <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1rem', color: 'var(--sage-muted)', textDecoration: 'line-through' }}>${c.price}</div>
+                    )}
+                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', color: 'var(--sage-accent)' }}>
+                      ${hasDiscount ? final.toFixed(2) : c.price}
+                    </div>
+                    {hasDiscount && (
+                      <span className="discount-tag">{discountPct}% off</span>
+                    )}
+                  </div>
+                  <div className="sub" style={{ marginBottom: 12 }}>
+                    One-time payment · Lifetime access.
+                    {hasDiscount && ` You save $${saved.toFixed(2)}!`}
+                  </div>
+                  <button className="btn full warm" disabled>Checkout coming soon</button>
+                  <p className="sub" style={{ marginTop: 10, marginBottom: 0, fontSize: '0.78rem' }}>
+                    Paid checkout needs Stripe setup. Free lessons are unlocked above.
+                  </p>
+                </>
+              )
+            })()
           )}
         </div>
       </>
@@ -696,21 +724,41 @@ function Courses() {
 
   return (
     <>
+      {discountPct > 0 && (
+        <div className="discount-banner">
+          🎉 You've unlocked <strong>{discountPct}% off</strong> your next course!
+          {discountPct < 25 && ' Buy more to unlock up to 25% off.'}
+        </div>
+      )}
+
       <div className="course-grid">
         {COURSES.map(c => {
-          const priceLabel = c.free ? 'Free' : `$${c.price}`
+          const isOwned = enrolled.includes(c.id)
+          const showDiscount = !c.free && !isOwned && discountPct > 0
+          const { final } = applyDiscount(c.price)
+          const priceLabel = c.free ? 'Free' : showDiscount ? `$${final.toFixed(2)}` : `$${c.price}`
           return (
             <button key={c.id} className="course-card" onClick={() => openDetail(c.id)}>
               <div className="course-thumb">
                 <span className="course-emoji">{c.emoji}</span>
-                <span className={`course-badge ${c.free ? 'free' : 'paid'}`}>{priceLabel}</span>
+                <span className={`course-badge ${c.free ? 'free' : 'paid'}`}>
+                  {isOwned ? '✓ Owned' : priceLabel}
+                </span>
+                {showDiscount && <span className="course-badge-discount">{discountPct}% off</span>}
               </div>
               <div className="course-body">
                 <div className="course-cat">{c.cat}</div>
                 <div className="course-name">{c.name}</div>
                 <div className="course-desc">{c.desc}</div>
                 <div className="course-footer">
-                  <span className={`course-price ${c.free ? 'free' : ''}`}>{priceLabel}</span>
+                  {showDiscount ? (
+                    <span className="course-price">
+                      <span style={{ textDecoration: 'line-through', color: 'var(--sage-muted)', marginRight: 4 }}>${c.price}</span>
+                      ${final.toFixed(2)}
+                    </span>
+                  ) : (
+                    <span className={`course-price ${c.free ? 'free' : ''}`}>{isOwned ? 'Enrolled' : priceLabel}</span>
+                  )}
                   <span className="course-lessons-count">{c.lessons.length} lessons</span>
                 </div>
               </div>
