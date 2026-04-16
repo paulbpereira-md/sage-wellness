@@ -168,12 +168,15 @@ function Chat({ name }) {
           userName: name
         })
       })
-      if (!res.ok) throw new Error(`Server responded ${res.status}`)
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        const detail = data?.error || `HTTP ${res.status}`
+        throw new Error(detail)
+      }
       const reply = data?.reply || "I'm not sure what to say right now, but I'm here."
       setMessages(m => [...m, { role: 'assistant', content: reply }])
     } catch (e) {
-      setError("I couldn't reach the AI just now. Your message is saved — try again in a moment.")
+      setError(`AI error: ${e.message}`)
     } finally {
       setSending(false)
     }
