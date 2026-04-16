@@ -44,7 +44,7 @@ const COURSES = [
   },
   {
     id: 'strength', emoji: '💪', cat: 'Fitness', name: 'Strength Without the Gym',
-    price: 79, free: false,
+    price: 9.99, free: false,
     desc: 'A complete bodyweight strength training system built on progressive overload. No equipment needed.',
     meta: ['24 lessons', '6 hours', '4.8 stars (189 reviews)', 'Lifetime access'],
     lessons: [
@@ -60,7 +60,7 @@ const COURSES = [
   },
   {
     id: 'nutrition', emoji: '🥗', cat: 'Nutrition', name: 'Eat to Thrive',
-    price: 97, free: false,
+    price: 14.99, free: false,
     desc: 'A science-backed nutrition system focused on anti-inflammatory eating, gut health, and building sustainable habits.',
     meta: ['18 lessons', '4.5 hours', '4.9 stars (97 reviews)', 'Lifetime access'],
     lessons: [
@@ -76,7 +76,7 @@ const COURSES = [
   },
   {
     id: 'sleep', emoji: '😴', cat: 'Sleep and Recovery', name: 'Deep Sleep Protocol',
-    price: 67, free: false,
+    price: 9.99, free: false,
     desc: 'A comprehensive sleep optimization system backed by circadian biology. Fall asleep faster, stay asleep longer, wake up refreshed.',
     meta: ['12 lessons', '3 hours', '4.7 stars (143 reviews)', 'Lifetime access'],
     lessons: [
@@ -92,7 +92,7 @@ const COURSES = [
   },
   {
     id: 'rewire', emoji: '🌱', cat: 'Habit Building', name: 'The 90-Day Rewire',
-    price: 127, free: false,
+    price: 19.99, free: false,
     desc: 'A neuroscience-backed habit transformation system to build 3-5 keystone habits in 90 days.',
     meta: ['30 lessons', '8 hours', '4.9 stars (62 reviews)', 'Lifetime access'],
     lessons: [
@@ -617,12 +617,11 @@ function Plan() {
 // ------------------------------------------------------------------
 
 function Courses() {
-  const [view, setView] = useState('browse')
   const [detailId, setDetailId] = useState(null)
   const [enrolled, setEnrolled] = useState(() => storage.get('courses.enrolled', []))
 
-  const openDetail = (id) => { setDetailId(id); setView('detail') }
-  const backToBrowse = () => { setDetailId(null); setView('browse') }
+  const openDetail = (id) => { setDetailId(id) }
+  const backToBrowse = () => { setDetailId(null) }
 
   const enroll = (id) => {
     if (enrolled.includes(id)) return
@@ -631,7 +630,7 @@ function Courses() {
     storage.set('courses.enrolled', next)
   }
 
-  if (view === 'detail' && detailId) {
+  if (detailId) {
     const c = COURSES.find(x => x.id === detailId)
     if (!c) { backToBrowse(); return null }
     const isEnrolled = enrolled.includes(c.id)
@@ -695,60 +694,8 @@ function Courses() {
     )
   }
 
-  if (view === 'income') {
-    return (
-      <>
-        <div className="course-subnav">
-          <button onClick={() => setView('browse')}>Browse</button>
-          <button className="active">My Income</button>
-        </div>
-        <div className="card">
-          <h2>Your Earnings</h2>
-          <p className="sub">Demo data — real earnings will appear once Stripe checkout is connected.</p>
-          <div className="income-grid">
-            <div className="income-stat">
-              <div className="income-label">Total Earned</div>
-              <div className="income-value">$1,240</div>
-              <div className="income-sub">↑ +$340 this month</div>
-            </div>
-            <div className="income-stat">
-              <div className="income-label">Active Students</div>
-              <div className="income-value">38</div>
-              <div className="income-sub">↑ +6 this week</div>
-            </div>
-            <div className="income-stat">
-              <div className="income-label">Courses Published</div>
-              <div className="income-value">3</div>
-              <div className="income-sub">1 pending review</div>
-            </div>
-            <div className="income-stat">
-              <div className="income-label">Avg. Rating</div>
-              <div className="income-value">4.8 ⭐</div>
-              <div className="income-sub">Top 10% creator</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <h2>Growth Tips</h2>
-          <ul className="tips-list">
-            <li>Add a free preview lesson to boost conversion by up to 40%</li>
-            <li>Bundle courses into a Holistic Starter Pack to increase order value</li>
-            <li>Students who use the AI Planner are 3× more likely to buy a course</li>
-            <li>Creators with 4+ courses earn 2.6× more on average</li>
-          </ul>
-        </div>
-      </>
-    )
-  }
-
   return (
     <>
-      <div className="course-subnav">
-        <button className="active" onClick={() => setView('browse')}>Browse</button>
-        <button onClick={() => setView('income')}>My Income</button>
-      </div>
-
       <div className="course-grid">
         {COURSES.map(c => {
           const priceLabel = c.free ? 'Free' : `$${c.price}`
