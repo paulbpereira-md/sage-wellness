@@ -63,7 +63,7 @@ export default async function handler(req) {
     if (!r.ok) {
       const errText = await r.text()
       console.error('Anthropic error:', r.status, errText)
-      return json({ error: 'Upstream error' }, 502)
+      return json({ error: `Anthropic API returned ${r.status}: ${errText}` }, 502)
     }
 
     const data = await r.json()
