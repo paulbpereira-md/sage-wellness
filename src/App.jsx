@@ -13,7 +13,101 @@ const TABS = [
   { id: 'mood',     label: 'Mood',    icon: '🌤' },
   { id: 'journal',  label: 'Journal', icon: '📓' },
   { id: 'habits',   label: 'Habits',  icon: '🌱' },
-  { id: 'breathe',  label: 'Breathe', icon: '🫁' }
+  { id: 'breathe',  label: 'Breathe', icon: '🫁' },
+  { id: 'plan',     label: 'Plan',    icon: '✨' },
+  { id: 'courses',  label: 'Courses', icon: '🎓' }
+]
+
+const FOCUS_AREAS = [
+  { id: 'meditation', label: 'Meditation & Mindfulness', sub: 'Stress reduction, mental clarity', emoji: '🧘' },
+  { id: 'fitness',    label: 'Fitness & Movement',       sub: 'Strength, cardio, flexibility', emoji: '💪' },
+  { id: 'nutrition',  label: 'Nutrition & Gut Health',   sub: 'Meal planning, anti-inflammatory', emoji: '🥗' },
+  { id: 'sleep',      label: 'Sleep & Recovery',         sub: 'Circadian rhythm, deep rest', emoji: '😴' },
+  { id: 'habits',     label: 'Habit Building',           sub: 'Daily routines, consistency', emoji: '🌱' }
+]
+
+const COURSES = [
+  {
+    id: 'calm', emoji: '🧘', cat: 'Mindfulness', name: '7-Day Calm Foundation',
+    price: 0, free: true,
+    desc: 'Build a lasting daily meditation practice from scratch. This gentle 7-day program guides you from complete beginner to confident meditator.',
+    meta: ['7 lessons', '1.5 hours', '4.9 stars (214 reviews)', 'Free forever'],
+    lessons: [
+      { t: 'Why Meditation Changes Everything',      d: '8 min',  free: true },
+      { t: 'Your First 5-Minute Breath Meditation',  d: '12 min', free: true },
+      { t: 'Body Scan for Deep Relaxation',          d: '15 min', free: false },
+      { t: 'Dealing with a Busy Mind',               d: '10 min', free: false },
+      { t: 'Morning Calm Ritual',                    d: '14 min', free: false },
+      { t: 'Mindful Movement Flow',                  d: '18 min', free: false },
+      { t: 'Building Your Daily Practice',           d: '11 min', free: false }
+    ]
+  },
+  {
+    id: 'strength', emoji: '💪', cat: 'Fitness', name: 'Strength Without the Gym',
+    price: 79, free: false,
+    desc: 'A complete bodyweight strength training system built on progressive overload. No equipment needed.',
+    meta: ['24 lessons', '6 hours', '4.8 stars (189 reviews)', 'Lifetime access'],
+    lessons: [
+      { t: 'The Bodyweight Strength Pyramid',  d: '14 min', free: true },
+      { t: 'Perfect Push-Up Mastery',          d: '18 min', free: true },
+      { t: 'Pull-Up Progression System',       d: '22 min', free: false },
+      { t: 'Squat Mechanics and Variations',   d: '20 min', free: false },
+      { t: 'Core Without Crunches',            d: '16 min', free: false },
+      { t: 'Progressive Overload Explained',   d: '12 min', free: false },
+      { t: 'Week 1-4 Training Plan',           d: '25 min', free: false },
+      { t: 'Recovery and Mobility Work',       d: '19 min', free: false }
+    ]
+  },
+  {
+    id: 'nutrition', emoji: '🥗', cat: 'Nutrition', name: 'Eat to Thrive',
+    price: 97, free: false,
+    desc: 'A science-backed nutrition system focused on anti-inflammatory eating, gut health, and building sustainable habits.',
+    meta: ['18 lessons', '4.5 hours', '4.9 stars (97 reviews)', 'Lifetime access'],
+    lessons: [
+      { t: 'The Anti-Inflammatory Food Framework', d: '16 min', free: true },
+      { t: 'Understanding Your Gut Microbiome',    d: '20 min', free: true },
+      { t: 'Building a Balanced Plate',            d: '14 min', free: false },
+      { t: 'Meal Prep Mastery Under 2 Hours',      d: '28 min', free: false },
+      { t: 'Reading Labels Like a Nutritionist',   d: '12 min', free: false },
+      { t: 'Gut-Healing Foods and Protocols',      d: '18 min', free: false },
+      { t: 'Managing Sugar Cravings',              d: '15 min', free: false },
+      { t: 'Your 30-Day Eating Blueprint',         d: '22 min', free: false }
+    ]
+  },
+  {
+    id: 'sleep', emoji: '😴', cat: 'Sleep and Recovery', name: 'Deep Sleep Protocol',
+    price: 67, free: false,
+    desc: 'A comprehensive sleep optimization system backed by circadian biology. Fall asleep faster, stay asleep longer, wake up refreshed.',
+    meta: ['12 lessons', '3 hours', '4.7 stars (143 reviews)', 'Lifetime access'],
+    lessons: [
+      { t: 'The Science of Sleep Architecture', d: '15 min', free: true },
+      { t: 'Circadian Rhythm Reset Protocol',   d: '18 min', free: true },
+      { t: 'Sleep Environment Optimization',    d: '14 min', free: false },
+      { t: 'Evening Wind-Down Ritual',          d: '20 min', free: false },
+      { t: 'Managing Blue Light Exposure',      d: '10 min', free: false },
+      { t: 'The Temperature Sleep Hack',        d: '8 min',  free: false },
+      { t: 'Stress and Cortisol at Night',      d: '16 min', free: false },
+      { t: 'Your Personal Sleep Protocol',      d: '12 min', free: false }
+    ]
+  },
+  {
+    id: 'rewire', emoji: '🌱', cat: 'Habit Building', name: 'The 90-Day Rewire',
+    price: 127, free: false,
+    desc: 'A neuroscience-backed habit transformation system to build 3-5 keystone habits in 90 days.',
+    meta: ['30 lessons', '8 hours', '4.9 stars (62 reviews)', 'Lifetime access'],
+    lessons: [
+      { t: 'Why Habits Fail',                     d: '14 min', free: true },
+      { t: 'The Identity-Based Habit Framework',  d: '18 min', free: true },
+      { t: 'Habit Stacking Architecture',         d: '16 min', free: false },
+      { t: 'Designing Your Environment',          d: '20 min', free: false },
+      { t: 'The Minimum Viable Habit',            d: '12 min', free: false },
+      { t: 'Tracking Without Obsessing',          d: '10 min', free: false },
+      { t: 'Navigating Streaks and Setbacks',     d: '14 min', free: false },
+      { t: 'Month 1 Foundation Phase',            d: '22 min', free: false },
+      { t: 'Month 2 Momentum Phase',              d: '22 min', free: false },
+      { t: 'Month 3 Integration Phase',           d: '22 min', free: false }
+    ]
+  }
 ]
 
 const MOODS = [
@@ -75,6 +169,8 @@ export default function App() {
         {tab === 'journal' && <Journal />}
         {tab === 'habits'  && <Habits />}
         {tab === 'breathe' && <Breathing />}
+        {tab === 'plan'    && <Plan />}
+        {tab === 'courses' && <Courses />}
       </main>
 
       <nav className="nav">
@@ -420,6 +516,262 @@ function Habits() {
         )
       })}
     </div>
+  )
+}
+
+// ------------------------------------------------------------------
+// Plan — AI Wellness Planner (from Lumina)
+// ------------------------------------------------------------------
+
+function Plan() {
+  const [selected, setSelected] = useState(() => storage.get('plan.focus', []))
+  const [goal, setGoal] = useState(() => storage.get('plan.goal', ''))
+  const [plan, setPlan] = useState(() => storage.get('plan.last', ''))
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const toggle = (id) => {
+    const next = selected.includes(id) ? selected.filter(x => x !== id) : [...selected, id]
+    setSelected(next)
+    storage.set('plan.focus', next)
+  }
+
+  const generate = async () => {
+    if (selected.length === 0 && !goal.trim()) {
+      setError('Pick at least one focus area or describe a goal.')
+      return
+    }
+    setLoading(true); setError(null)
+    storage.set('plan.goal', goal)
+    try {
+      const res = await fetch('/api/plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          focus: selected.map(id => FOCUS_AREAS.find(f => f.id === id)?.label).filter(Boolean),
+          goal
+        })
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`)
+      const text = data?.plan || ''
+      setPlan(text)
+      storage.set('plan.last', text)
+    } catch (e) {
+      setError(`Couldn't generate plan: ${e.message}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <>
+      <div className="card">
+        <h2>Your Personal Wellness Planner</h2>
+        <p className="sub">Pick focus areas and describe what you're working toward. I'll draft a 7-day plan tuned to you.</p>
+
+        <div className="focus-grid">
+          {FOCUS_AREAS.map(f => (
+            <button
+              key={f.id}
+              className={`focus-opt ${selected.includes(f.id) ? 'selected' : ''}`}
+              onClick={() => toggle(f.id)}
+            >
+              <span className="focus-emoji">{f.emoji}</span>
+              <span className="focus-label">{f.label}</span>
+              <span className="focus-sub">{f.sub}</span>
+            </button>
+          ))}
+        </div>
+
+        <textarea
+          className="textarea"
+          placeholder="What are you hoping to change or feel this week?"
+          value={goal}
+          onChange={e => setGoal(e.target.value)}
+          maxLength={600}
+          style={{ marginTop: 12 }}
+        />
+
+        <button className="btn full" onClick={generate} disabled={loading} style={{ marginTop: 12 }}>
+          {loading ? 'Generating…' : '\u2728 Generate My Wellness Plan'}
+        </button>
+
+        {error && (
+          <div style={{ marginTop: 10, color: 'var(--sage-danger)', fontSize: '0.85rem' }}>{error}</div>
+        )}
+      </div>
+
+      {plan && (
+        <div className="card">
+          <h2>Your 7-Day Plan</h2>
+          <div className="plan-body">{plan}</div>
+        </div>
+      )}
+    </>
+  )
+}
+
+// ------------------------------------------------------------------
+// Courses — Lumina marketplace + Income dashboard
+// ------------------------------------------------------------------
+
+function Courses() {
+  const [view, setView] = useState('browse')
+  const [detailId, setDetailId] = useState(null)
+  const [enrolled, setEnrolled] = useState(() => storage.get('courses.enrolled', []))
+
+  const openDetail = (id) => { setDetailId(id); setView('detail') }
+  const backToBrowse = () => { setDetailId(null); setView('browse') }
+
+  const enroll = (id) => {
+    if (enrolled.includes(id)) return
+    const next = [...enrolled, id]
+    setEnrolled(next)
+    storage.set('courses.enrolled', next)
+  }
+
+  if (view === 'detail' && detailId) {
+    const c = COURSES.find(x => x.id === detailId)
+    if (!c) { backToBrowse(); return null }
+    const isEnrolled = enrolled.includes(c.id)
+    return (
+      <>
+        <button className="course-back" onClick={backToBrowse}>← Back to Courses</button>
+        <div className="card">
+          <div className="course-hero">
+            <div className="course-hero-emoji">{c.emoji}</div>
+            <div className="course-hero-cat">{c.cat}</div>
+            <h2 style={{ marginTop: 4 }}>{c.name}</h2>
+            <p className="sub" style={{ marginBottom: 10 }}>{c.desc}</p>
+            <div className="course-meta">
+              {c.meta.map((m, i) => <span key={i}>📌 {m}</span>)}
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <h2>Lessons</h2>
+          {c.lessons.map((l, i) => {
+            const unlocked = c.free || l.free || isEnrolled
+            return (
+              <div key={i} className="lesson-row">
+                <div className={`lesson-num ${unlocked ? 'free' : ''}`}>{i + 1}</div>
+                <div className="lesson-info">
+                  <div className="lesson-title">{l.t}</div>
+                  <div className="lesson-dur">{l.d}</div>
+                </div>
+                <div>{unlocked ? '▶' : '🔒'}</div>
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="card">
+          {c.free ? (
+            <>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.4rem', color: 'var(--sage-accent)' }}>Free</div>
+              <div className="sub" style={{ marginBottom: 12 }}>No credit card required.</div>
+              <button
+                className="btn full"
+                onClick={() => enroll(c.id)}
+                disabled={isEnrolled}
+              >
+                {isEnrolled ? '✓ Enrolled' : 'Enroll Free'}
+              </button>
+            </>
+          ) : (
+            <>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', color: 'var(--sage-accent)' }}>${c.price}</div>
+              <div className="sub" style={{ marginBottom: 12 }}>One-time payment · Lifetime access.</div>
+              <button className="btn full warm" disabled>Checkout coming soon</button>
+              <p className="sub" style={{ marginTop: 10, marginBottom: 0, fontSize: '0.78rem' }}>
+                Paid checkout needs Stripe setup. Free lessons are unlocked above.
+              </p>
+            </>
+          )}
+        </div>
+      </>
+    )
+  }
+
+  if (view === 'income') {
+    return (
+      <>
+        <div className="course-subnav">
+          <button onClick={() => setView('browse')}>Browse</button>
+          <button className="active">My Income</button>
+        </div>
+        <div className="card">
+          <h2>Your Earnings</h2>
+          <p className="sub">Demo data — real earnings will appear once Stripe checkout is connected.</p>
+          <div className="income-grid">
+            <div className="income-stat">
+              <div className="income-label">Total Earned</div>
+              <div className="income-value">$1,240</div>
+              <div className="income-sub">↑ +$340 this month</div>
+            </div>
+            <div className="income-stat">
+              <div className="income-label">Active Students</div>
+              <div className="income-value">38</div>
+              <div className="income-sub">↑ +6 this week</div>
+            </div>
+            <div className="income-stat">
+              <div className="income-label">Courses Published</div>
+              <div className="income-value">3</div>
+              <div className="income-sub">1 pending review</div>
+            </div>
+            <div className="income-stat">
+              <div className="income-label">Avg. Rating</div>
+              <div className="income-value">4.8 ⭐</div>
+              <div className="income-sub">Top 10% creator</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <h2>Growth Tips</h2>
+          <ul className="tips-list">
+            <li>Add a free preview lesson to boost conversion by up to 40%</li>
+            <li>Bundle courses into a Holistic Starter Pack to increase order value</li>
+            <li>Students who use the AI Planner are 3× more likely to buy a course</li>
+            <li>Creators with 4+ courses earn 2.6× more on average</li>
+          </ul>
+        </div>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <div className="course-subnav">
+        <button className="active" onClick={() => setView('browse')}>Browse</button>
+        <button onClick={() => setView('income')}>My Income</button>
+      </div>
+
+      <div className="course-grid">
+        {COURSES.map(c => {
+          const priceLabel = c.free ? 'Free' : `$${c.price}`
+          return (
+            <button key={c.id} className="course-card" onClick={() => openDetail(c.id)}>
+              <div className="course-thumb">
+                <span className="course-emoji">{c.emoji}</span>
+                <span className={`course-badge ${c.free ? 'free' : 'paid'}`}>{priceLabel}</span>
+              </div>
+              <div className="course-body">
+                <div className="course-cat">{c.cat}</div>
+                <div className="course-name">{c.name}</div>
+                <div className="course-desc">{c.desc}</div>
+                <div className="course-footer">
+                  <span className={`course-price ${c.free ? 'free' : ''}`}>{priceLabel}</span>
+                  <span className="course-lessons-count">{c.lessons.length} lessons</span>
+                </div>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+    </>
   )
 }
 

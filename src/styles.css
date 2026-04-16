@@ -66,22 +66,22 @@ input, textarea { font-family: inherit; }
 /* ----- Bottom nav ----- */
 .nav {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   border-top: 1px solid var(--sage-line);
   background: var(--sage-panel);
 }
 .nav button {
-  padding: 10px 4px 12px;
+  padding: 10px 2px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   color: var(--sage-muted);
   transition: color 0.15s;
 }
 .nav button.active { color: var(--sage-accent); font-weight: 600; }
-.nav .icon { font-size: 1.25rem; }
+.nav .icon { font-size: 1.15rem; }
 
 /* ----- Panels & cards ----- */
 .card {
@@ -254,3 +254,165 @@ input, textarea { font-family: inherit; }
 .journal-entry .body { font-size: 0.93rem; white-space: pre-wrap; }
 
 .empty { text-align: center; color: var(--sage-muted); padding: 30px 10px; font-size: 0.9rem; }
+
+/* ----- Plan (AI Wellness Planner) ----- */
+.focus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+.focus-opt {
+  text-align: left;
+  border: 1px solid var(--sage-line);
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: all 0.15s;
+}
+.focus-opt.selected {
+  border-color: var(--sage-accent);
+  background: #eef5ef;
+}
+.focus-emoji { font-size: 1.3rem; }
+.focus-label { font-size: 0.82rem; font-weight: 600; color: var(--sage-ink); }
+.focus-opt.selected .focus-label { color: var(--sage-accent); }
+.focus-sub { font-size: 0.7rem; color: var(--sage-muted); }
+
+.plan-body {
+  white-space: pre-wrap;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--sage-ink);
+}
+
+/* ----- Courses ----- */
+.course-subnav {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  background: var(--sage-panel);
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: var(--shadow);
+}
+.course-subnav button {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 9px;
+  font-size: 0.88rem;
+  color: var(--sage-muted);
+  font-weight: 500;
+}
+.course-subnav button.active {
+  background: var(--sage-accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.course-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.course-card {
+  text-align: left;
+  background: var(--sage-panel);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  transition: transform 0.1s;
+}
+.course-card:active { transform: scale(0.99); }
+.course-thumb {
+  position: relative;
+  height: 90px;
+  background: linear-gradient(135deg, var(--sage-soft), #f1ede3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+}
+.course-emoji { font-size: 2.4rem; }
+.course-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.course-badge.free { background: var(--sage-accent); color: #fff; }
+.course-badge.paid { background: var(--sage-warm); color: #fff; }
+.course-body { padding: 12px 14px 14px; }
+.course-cat { font-size: 0.68rem; color: var(--sage-muted); text-transform: uppercase; letter-spacing: 1px; }
+.course-name { font-family: var(--font-serif); font-size: 1.05rem; color: var(--sage-accent); margin-top: 3px; }
+.course-desc { font-size: 0.82rem; color: var(--sage-muted); margin-top: 6px; line-height: 1.5; }
+.course-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 0.82rem;
+}
+.course-price { font-weight: 600; color: var(--sage-warm); }
+.course-price.free { color: var(--sage-accent); }
+.course-lessons-count { color: var(--sage-muted); font-size: 0.78rem; }
+
+.course-back {
+  color: var(--sage-muted);
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+  padding: 4px 0;
+}
+
+.course-hero { text-align: left; }
+.course-hero-emoji { font-size: 2.4rem; }
+.course-hero-cat { font-size: 0.7rem; color: var(--sage-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+.course-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 0.78rem; color: var(--sage-muted); margin-top: 8px; }
+
+.lesson-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--sage-line);
+}
+.lesson-row:last-child { border-bottom: none; }
+.lesson-num {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: var(--sage-soft);
+  color: var(--sage-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.lesson-num.free { background: var(--sage-accent); color: #fff; }
+.lesson-info { flex: 1; }
+.lesson-title { font-size: 0.9rem; }
+.lesson-dur { font-size: 0.75rem; color: var(--sage-muted); margin-top: 2px; }
+
+/* ----- Income dashboard ----- */
+.income-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.income-stat {
+  background: #fff;
+  border: 1px solid var(--sage-line);
+  border-radius: 12px;
+  padding: 12px;
+}
+.income-label { font-size: 0.72rem; color: var(--sage-muted); text-transform: uppercase; letter-spacing: 1px; }
+.income-value { font-family: var(--font-serif); font-size: 1.4rem; color: var(--sage-accent); margin-top: 4px; }
+.income-sub { font-size: 0.72rem; color: var(--sage-warm); margin-top: 4px; }
+
+.tips-list { padding-left: 20px; margin: 0; color: var(--sage-ink); font-size: 0.88rem; line-height: 1.7; }
+.tips-list li { margin-bottom: 4px; }
