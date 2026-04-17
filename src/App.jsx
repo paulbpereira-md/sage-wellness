@@ -807,7 +807,8 @@ const GAME_LIST = [
   { id: 'word',     emoji: '🔤', name: 'Word Unscramble',   desc: 'Unscramble wellness-themed words — keeps your mind sharp.' },
   { id: 'focus',    emoji: '🎯', name: 'Focus Tap',         desc: 'Tap the targets as they appear — tests attention and reaction speed.' },
   { id: 'gem-crush', emoji: '💎', name: 'Gem Crush',        desc: 'Swap gems to match 3+ in a row — relaxing, colorful, and satisfying.' },
-  { id: 'zen-stack', emoji: '🧱', name: 'Zen Stack',        desc: 'Stack falling blocks to clear lines — a calming twist on a classic.' }
+  { id: 'zen-stack', emoji: '🧱', name: 'Zen Stack',        desc: 'Stack falling blocks to clear lines — a calming twist on a classic.' },
+  { id: 'lily-hop',  emoji: '🐸', name: 'Lily Hop',         desc: 'Guide the frog across roads and rivers — tests timing and focus.' }
 ]
 
 function MindGames() {
@@ -829,6 +830,7 @@ function MindGames() {
   if (activeGame === 'focus') return <FocusGame onBack={() => setActiveGame(null)} onScore={(s) => saveBest('focus', s)} best={bestScores.focus || 0} />
   if (activeGame === 'gem-crush') return <GemCrushGame onBack={() => setActiveGame(null)} onScore={(s) => saveBest('gem-crush', s)} best={bestScores['gem-crush'] || 0} />
   if (activeGame === 'zen-stack') return <ZenStackGame onBack={() => setActiveGame(null)} onScore={(s) => saveBest('zen-stack', s)} best={bestScores['zen-stack'] || 0} />
+  if (activeGame === 'lily-hop') return <LilyHopGame onBack={() => setActiveGame(null)} onScore={(s) => saveBest('lily-hop', s)} best={bestScores['lily-hop'] || 0} />
 
   return (
     <>
@@ -1629,6 +1631,268 @@ function ZenStackGame({ onBack, onScore, best }) {
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
             <div style={{ fontSize: '1.3rem', color: 'var(--sage-accent)', fontFamily: 'var(--font-serif)' }}>
               Score: {displayScore}
+            </div>
+            {best > 0 && <div className="sub" style={{ margin: '4px 0 0' }}>Best: {best}</div>}
+            <button className="btn" onClick={start} style={{ marginTop: 12 }}>Play Again</button>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
+// --- Lily Hop (Frogger-style) ---
+const LH_COLS = 9
+const LH_ROWS = 13
+const LH_TICK = 200
+
+function buildLanes() {
+  // Row 0 = goal, rows 1-5 = river (logs), row 6 = safe, rows 7-11 = road (cars), row 12 = start
+  return [
+    { type: 'goal' },
+    { type: 'river', items: [{c:0,w:3},{c:5,w:2}],  dir: 1,  speed: 1 },
+    { type: 'river', items: [{c:2,w:4}],             dir: -1, speed: 1 },
+    { type: 'river', items: [{c:0,w:2},{c:4,w:3}],  dir: 1,  speed: 2 },
+    { type: 'river', items: [{c:1,w:3},{c:6,w:2}],  dir: -1, speed: 1 },
+    { type: 'river', items: [{c:0,w:4},{c:6,w:3}],  dir: 1,  speed: 1 },
+    { type: 'safe' },
+    { type: 'road',  items: [{c:1,w:1},{c:4,w:1},{c:7,w:1}], dir: -1, speed: 1 },
+    { type: 'road',  items: [{c:0,w:1},{c:3,w:1},{c:6,w:1}], dir: 1,  speed: 2 },
+    { type: 'road',  items: [{c:2,w:1},{c:5,w:1},{c:8,w:1}], dir: -1, speed: 1 },
+    { type: 'road',  items: [{c:1,w:2},{c:6,w:2}],            dir: 1,  speed: 1 },
+    { type: 'road',  items: [{c:0,w:1},{c:3,w:1},{c:7,w:1}], dir: -1, speed: 2 },
+    { type: 'start' }
+  ]
+}
+
+function LilyHopGame({ onBack, onScore, best }) {
+  const [phase, setPhase] = useState('ready')
+  const [frogR, setFrogR] = useState(12)
+  const [frogC, setFrogC] = useState(4)
+  const [lanes, setLanes] = useState(() => buildLanes())
+  const [score, setScore] = useState(0)
+  const [lives, setLives] = useState(3)
+  const [bestRow, setBestRow] = useState(12)
+  const intervalRef = useRef(null)
+  const frogRef = useRef({ r: 12, c: 4 })
+  const lanesRef = useRef(lanes)
+  const livesRef = useRef(3)
+  const scoreRef = useRef(0)
+  const bestRowRef = useRef(12)
+
+  const resetFrog = () => {
+    frogRef.current = { r: 12, c: 4 }
+    setFrogR(12)
+    setFrogC(4)
+  }
+
+  const die = useCallback(() => {
+    const l = livesRef.current - 1
+    livesRef.current = l
+    setLives(l)
+    if (l <= 0) {
+      clearInterval(intervalRef.current)
+      onScore(scoreRef.current)
+      setPhase('results')
+    } else {
+      resetFrog()
+    }
+  }, [onScore])
+
+  const checkCollision = useCallback((r, c, currentLanes) => {
+    const lane = currentLanes[r]
+    if (!lane) return false
+    if (lane.type === 'road') {
+      // hit by car?
+      for (const item of lane.items) {
+        const ic = ((item.c % LH_COLS) + LH_COLS) % LH_COLS
+        for (let w = 0; w < item.w; w++) {
+          if (((ic + w) % LH_COLS) === ((c % LH_COLS) + LH_COLS) % LH_COLS) return true
+        }
+      }
+    }
+    if (lane.type === 'river') {
+      // must be on a log
+      let onLog = false
+      for (const item of lane.items) {
+        const ic = ((item.c % LH_COLS) + LH_COLS) % LH_COLS
+        for (let w = 0; w < item.w; w++) {
+          if (((ic + w) % LH_COLS) === ((c % LH_COLS) + LH_COLS) % LH_COLS) onLog = true
+        }
+      }
+      if (!onLog) return true
+    }
+    return false
+  }, [])
+
+  const tick = useCallback(() => {
+    setLanes(prev => {
+      const next = prev.map((lane, idx) => {
+        if (lane.type !== 'road' && lane.type !== 'river') return lane
+        const moved = {
+          ...lane,
+          items: lane.items.map(item => ({
+            ...item,
+            c: ((item.c + lane.dir * lane.speed) % LH_COLS + LH_COLS) % LH_COLS
+          }))
+        }
+        return moved
+      })
+      lanesRef.current = next
+
+      // If frog on river, move with log
+      const fr = frogRef.current.r
+      const fc = frogRef.current.c
+      const fLane = next[fr]
+      if (fLane && fLane.type === 'river') {
+        const newC = ((fc + fLane.dir * fLane.speed) % LH_COLS + LH_COLS) % LH_COLS
+        frogRef.current.c = newC
+        setFrogC(newC)
+      }
+
+      // Check collision after movement
+      if (checkCollision(frogRef.current.r, frogRef.current.c, next)) {
+        die()
+      }
+
+      return next
+    })
+  }, [checkCollision, die])
+
+  const start = () => {
+    const freshLanes = buildLanes()
+    setLanes(freshLanes)
+    lanesRef.current = freshLanes
+    livesRef.current = 3
+    setLives(3)
+    scoreRef.current = 0
+    setScore(0)
+    bestRowRef.current = 12
+    setBestRow(12)
+    resetFrog()
+    setPhase('playing')
+    clearInterval(intervalRef.current)
+    intervalRef.current = setInterval(tick, LH_TICK)
+  }
+
+  const moveFrog = useCallback((dr, dc) => {
+    if (phase !== 'playing') return
+    const nr = Math.max(0, Math.min(LH_ROWS - 1, frogRef.current.r + dr))
+    const nc = ((frogRef.current.c + dc) % LH_COLS + LH_COLS) % LH_COLS
+
+    frogRef.current = { r: nr, c: nc }
+    setFrogR(nr)
+    setFrogC(nc)
+
+    // Score for forward progress
+    if (nr < bestRowRef.current) {
+      const pts = (bestRowRef.current - nr) * 10
+      bestRowRef.current = nr
+      setBestRow(nr)
+      scoreRef.current += pts
+      setScore(scoreRef.current)
+    }
+
+    // Reached goal!
+    if (nr === 0) {
+      scoreRef.current += 50
+      setScore(scoreRef.current)
+      resetFrog()
+      bestRowRef.current = 12
+      setBestRow(12)
+    }
+
+    // Check collision
+    if (checkCollision(nr, nc, lanesRef.current)) {
+      die()
+    }
+  }, [phase, checkCollision, die])
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (phase !== 'playing') return
+      if (e.key === 'ArrowUp')    { e.preventDefault(); moveFrog(-1, 0) }
+      if (e.key === 'ArrowDown')  { e.preventDefault(); moveFrog(1, 0) }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); moveFrog(0, -1) }
+      if (e.key === 'ArrowRight') { e.preventDefault(); moveFrog(0, 1) }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [phase, moveFrog])
+
+  useEffect(() => () => clearInterval(intervalRef.current), [])
+
+  const getCellContent = (r, c) => {
+    if (frogR === r && frogC === c) return '🐸'
+    const lane = lanes[r]
+    if (lane.type === 'goal') return r === 0 ? '🌸' : ''
+    if (lane.type === 'road') {
+      for (const item of lane.items) {
+        const ic = ((item.c % LH_COLS) + LH_COLS) % LH_COLS
+        for (let w = 0; w < item.w; w++) {
+          if (((ic + w) % LH_COLS) === c) return lane.dir > 0 ? '🚗' : '🚙'
+        }
+      }
+    }
+    if (lane.type === 'river') {
+      for (const item of lane.items) {
+        const ic = ((item.c % LH_COLS) + LH_COLS) % LH_COLS
+        for (let w = 0; w < item.w; w++) {
+          if (((ic + w) % LH_COLS) === c) return '🪵'
+        }
+      }
+      return '🌊'
+    }
+    return ''
+  }
+
+  const getCellClass = (r, c) => {
+    const lane = lanes[r]
+    if (lane.type === 'goal') return 'lh-goal'
+    if (lane.type === 'safe' || lane.type === 'start') return 'lh-safe'
+    if (lane.type === 'road') return 'lh-road'
+    if (lane.type === 'river') return 'lh-water'
+    return ''
+  }
+
+  return (
+    <>
+      <button className="course-back" onClick={onBack}>← Back to Games</button>
+      <div className="card">
+        <h2>🐸 Lily Hop</h2>
+        <p className="sub">Guide the frog to the flowers. Avoid cars, ride logs!</p>
+        {phase === 'ready' && (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <button className="btn" onClick={start}>Start</button>
+          </div>
+        )}
+        {phase === 'playing' && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span className="sub" style={{ margin: 0 }}>Lives: {'🐸'.repeat(lives)}</span>
+              <span className="sub" style={{ margin: 0 }}>Score: {score}</span>
+            </div>
+            <div className="lh-board">
+              {Array.from({ length: LH_ROWS }, (_, r) =>
+                Array.from({ length: LH_COLS }, (_, c) => (
+                  <div key={`${r}-${c}`} className={`lh-cell ${getCellClass(r, c)}`}>
+                    {getCellContent(r, c)}
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="zen-controls" style={{ marginTop: 12 }}>
+              <button className="zen-btn" onClick={() => moveFrog(0, -1)}>←</button>
+              <button className="zen-btn" onClick={() => moveFrog(-1, 0)}>↑</button>
+              <button className="zen-btn" onClick={() => moveFrog(1, 0)}>↓</button>
+              <button className="zen-btn" onClick={() => moveFrog(0, 1)}>→</button>
+            </div>
+          </>
+        )}
+        {phase === 'results' && (
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <div style={{ fontSize: '1.3rem', color: 'var(--sage-accent)', fontFamily: 'var(--font-serif)' }}>
+              Score: {score}
             </div>
             {best > 0 && <div className="sub" style={{ margin: '4px 0 0' }}>Best: {best}</div>}
             <button className="btn" onClick={start} style={{ marginTop: 12 }}>Play Again</button>

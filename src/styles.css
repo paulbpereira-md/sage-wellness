@@ -876,3 +876,36 @@ input, textarea { font-family: inherit; }
   transform: scale(0.9);
   background: #e0e7ff;
 }
+
+/* ── Lily Hop (Frogger) ── */
+.lh-board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 1px;
+  max-width: 300px;
+  margin: 0 auto;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid #c8d6c0;
+}
+
+.lh-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  user-select: none;
+}
+.lh-safe, .lh-cell:not(.lh-road):not(.lh-water):not(.lh-goal) {
+  background: #c8e6c9;
+}
+.lh-goal {
+  background: #a5d6a7;
+}
+.lh-road {
+  background: #616161;
+}
+.lh-water {
+  background: #64b5f6;
+}
