@@ -10,12 +10,12 @@ import { storage, today, lastNDays } from './lib/storage.js'
 
 const TABS = [
   { id: 'chat',     label: 'Chat',    icon: '💬' },
+  { id: 'games',    label: 'Games',   icon: '🧩' },
+  { id: 'plan',     label: 'Plan',    icon: '✨' },
   { id: 'mood',     label: 'Mood',    icon: '🌤' },
   { id: 'journal',  label: 'Journal', icon: '📓' },
   { id: 'habits',   label: 'Habits',  icon: '🌱' },
   { id: 'breathe',  label: 'Breathe', icon: '🫁' },
-  { id: 'games',    label: 'Games',   icon: '🧩' },
-  { id: 'plan',     label: 'Plan',    icon: '✨' },
   { id: 'courses',  label: 'Courses', icon: '🎓' }
 ]
 
