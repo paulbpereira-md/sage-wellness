@@ -14,6 +14,7 @@ const TABS = [
   { id: 'journal',  label: 'Journal', icon: '📓' },
   { id: 'habits',   label: 'Habits',  icon: '🌱' },
   { id: 'breathe',  label: 'Breathe', icon: '🫁' },
+  { id: 'games',    label: 'Games',   icon: '🧩' },
   { id: 'plan',     label: 'Plan',    icon: '✨' },
   { id: 'courses',  label: 'Courses', icon: '🎓' }
 ]
@@ -169,6 +170,7 @@ export default function App() {
         {tab === 'journal' && <Journal />}
         {tab === 'habits'  && <Habits />}
         {tab === 'breathe' && <Breathing />}
+        {tab === 'games'   && <MindGames />}
         {tab === 'plan'    && <Plan />}
         {tab === 'courses' && <Courses />}
       </main>
@@ -790,6 +792,848 @@ function Courses() {
         {paidOwned === 0 && <p className="sub" style={{ marginTop: 10, marginBottom: 0 }}>Purchase your first course to start unlocking discounts!</p>}
         {paidOwned > 0 && paidOwned < 3 && <p className="sub" style={{ marginTop: 10, marginBottom: 0 }}>You're getting {discountPct}% off — {3 - paidOwned} more course{3 - paidOwned > 1 ? 's' : ''} to unlock 25%!</p>}
         {paidOwned >= 3 && <p className="sub" style={{ marginTop: 10, marginBottom: 0 }}>You've reached the maximum 25% discount on all courses!</p>}
+      </div>
+    </>
+  )
+}
+
+// ------------------------------------------------------------------
+// Mind Games — hub + 4 games
+// ------------------------------------------------------------------
+
+const GAME_LIST = [
+  { id: 'memory',   emoji: '🃏', name: 'Memory Match',      desc: 'Flip cards and find matching pairs — trains short-term memory.' },
+  { id: 'breathe-rhythm', emoji: '🌊', name: 'Breath Flow', desc: 'Tap in rhythm with calming breath patterns — combines play with mindfulness.' },
+  { id: 'word',     emoji: '🔤', name: 'Word Unscramble',   desc: 'Unscramble wellness-themed words — keeps your mind sharp.' },
+  { id: 'focus',    emoji: '🎯', name: 'Focus Tap',         desc: 'Tap the targets as they appear — tests attention and reaction speed.' },
+  { id: 'gem-crush', emoji: '💎', name: 'Gem Crush',        desc: 'Swap gems to match 3+ in a row — relaxing, colorful, and satisfying.' },
+  { id: 'zen-stack', emoji: '🧱', name: 'Zen Stack',        desc: 'Stack falling blocks to clear lines — a calming twist on a classic.' }
+]
+
+function MindGames() {
+  const [activeGame, setActiveGame] = useState(null)
+  const [bestScores, setBestScores] = useState(() => storage.get('games.best', {}))
+
+  const saveBest = (gameId, score) => {
+    const current = bestScores[gameId] || 0
+    if (score > current) {
+      const next = { ...bestScores, [gameId]: score }
+      setBestScores(next)
+      storage.set('games.best', next)
+    }
+  }
+
+  if (activeGame === 'memory') return <MemoryGame onBack={() => setActiveGame(null)} onScore={(s) => saveBest('memory', s)} best={bestScores.memory || 0} />
+  if (activeGame === 'breathe-rhythm') return <BreatheRhythmGame onBack={() => setActiveGame(null)} onScore={(s) => saveBest('breathe-rhythm', s)} best={bestScores['breathe-rhythm'] || 0} />
+  if (activeGame === 'word') return <WordGame onBack={() => setActiveGame(null)} onScore={(s) => saveBest('word', s)} best={bestScores.word || 0} />
+  if (activeGame === 'focus') return <FocusGame onBack={() => setActiveGame(null)} onScore={(s) => saveBest('focus', s)} best={bestScores.focus || 0} />
+  if (activeGame === 'gem-crush') return <GemCrushGame onBack={() => setActiveGame(null)} onScore={(s) => saveBest('gem-crush', s)} best={bestScores['gem-crush'] || 0} />
+  if (activeGame === 'zen-stack') return <ZenStackGame onBack={() => setActiveGame(null)} onScore={(s) => saveBest('zen-stack', s)} best={bestScores['zen-stack'] || 0} />
+
+  return (
+    <>
+      <div className="card">
+        <h2>Mind Games</h2>
+        <p className="sub">Take a mental break. Pick a game and play at your own pace.</p>
+      </div>
+      <div className="game-hub">
+        {GAME_LIST.map(g => (
+          <button key={g.id} className="game-card" onClick={() => setActiveGame(g.id)}>
+            <div className="game-card-emoji">{g.emoji}</div>
+            <div className="game-card-info">
+              <div className="game-card-name">{g.name}</div>
+              <div className="game-card-desc">{g.desc}</div>
+              {bestScores[g.id] > 0 && <div className="game-card-best">Best: {bestScores[g.id]}</div>}
+            </div>
+          </button>
+        ))}
+      </div>
+    </>
+  )
+}
+
+// --- Memory Match ---
+function MemoryGame({ onBack, onScore, best }) {
+  const SYMBOLS = ['🧘','💚','🌿','🌸','🦋','🌙','☀️','💧']
+  const [cards, setCards] = useState([])
+  const [flipped, setFlipped] = useState([])
+  const [matched, setMatched] = useState([])
+  const [moves, setMoves] = useState(0)
+  const [finished, setFinished] = useState(false)
+
+  useEffect(() => {
+    const deck = [...SYMBOLS, ...SYMBOLS]
+      .map((s, i) => ({ id: i, symbol: s }))
+      .sort(() => Math.random() - 0.5)
+    setCards(deck)
+    setFlipped([]); setMatched([]); setMoves(0); setFinished(false)
+  }, [])
+
+  const flip = (idx) => {
+    if (flipped.length === 2 || flipped.includes(idx) || matched.includes(idx)) return
+    const next = [...flipped, idx]
+    setFlipped(next)
+    if (next.length === 2) {
+      setMoves(m => m + 1)
+      if (cards[next[0]].symbol === cards[next[1]].symbol) {
+        const newMatched = [...matched, next[0], next[1]]
+        setMatched(newMatched)
+        setFlipped([])
+        if (newMatched.length === cards.length) {
+          setFinished(true)
+          const score = Math.max(100 - (moves * 3), 10)
+          onScore(score)
+        }
+      } else {
+        setTimeout(() => setFlipped([]), 700)
+      }
+    }
+  }
+
+  const restart = () => {
+    const deck = [...SYMBOLS, ...SYMBOLS]
+      .map((s, i) => ({ id: i, symbol: s }))
+      .sort(() => Math.random() - 0.5)
+    setCards(deck)
+    setFlipped([]); setMatched([]); setMoves(0); setFinished(false)
+  }
+
+  return (
+    <>
+      <button className="course-back" onClick={onBack}>← Back to Games</button>
+      <div className="card">
+        <h2>🃏 Memory Match</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+          <span className="sub" style={{ margin: 0 }}>Moves: {moves}</span>
+          <span className="sub" style={{ margin: 0 }}>Matched: {matched.length / 2} / {SYMBOLS.length}</span>
+        </div>
+        <div className="memory-grid">
+          {cards.map((c, i) => {
+            const isFlipped = flipped.includes(i) || matched.includes(i)
+            return (
+              <button
+                key={i}
+                className={`memory-cell ${isFlipped ? 'flipped' : ''} ${matched.includes(i) ? 'matched' : ''}`}
+                onClick={() => flip(i)}
+              >
+                {isFlipped ? c.symbol : '?'}
+              </button>
+            )
+          })}
+        </div>
+        {finished && (
+          <div style={{ textAlign: 'center', marginTop: 16 }}>
+            <div style={{ fontSize: '1.2rem', color: 'var(--sage-accent)', fontFamily: 'var(--font-serif)' }}>
+              Nice! Completed in {moves} moves
+            </div>
+            {best > 0 && <div className="sub" style={{ margin: '4px 0 0' }}>Best score: {best}</div>}
+            <button className="btn" onClick={restart} style={{ marginTop: 12 }}>Play Again</button>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
+// --- Breath Flow (Rhythm) ---
+function BreatheRhythmGame({ onBack, onScore, best }) {
+  const PATTERN = [1200, 800, 1200, 800, 1500, 800, 1500, 800, 1200, 800]
+  const [phase, setPhase] = useState('ready') // ready | playing | results
+  const [targetIdx, setTargetIdx] = useState(0)
+  const [showTarget, setShowTarget] = useState(false)
+  const [score, setScore] = useState(0)
+  const [feedback, setFeedback] = useState('')
+  const timerRef = useRef(null)
+  const startTimeRef = useRef(null)
+
+  const start = () => {
+    setPhase('playing'); setTargetIdx(0); setScore(0); setFeedback('')
+    runTarget(0)
+  }
+
+  const runTarget = (idx) => {
+    if (idx >= PATTERN.length) {
+      setPhase('results')
+      return
+    }
+    setShowTarget(true)
+    startTimeRef.current = Date.now()
+    setTargetIdx(idx)
+    timerRef.current = setTimeout(() => {
+      setShowTarget(false)
+      setFeedback('Missed!')
+      setTimeout(() => { setFeedback(''); runTarget(idx + 1) }, 500)
+    }, PATTERN[idx] + 400)
+  }
+
+  const tap = () => {
+    if (phase !== 'playing' || !showTarget) return
+    clearTimeout(timerRef.current)
+    const elapsed = Date.now() - startTimeRef.current
+    const target = PATTERN[targetIdx]
+    const diff = Math.abs(elapsed - target)
+    let pts = 0
+    if (diff < 100) { pts = 10; setFeedback('Perfect!') }
+    else if (diff < 250) { pts = 7; setFeedback('Great!') }
+    else if (diff < 500) { pts = 4; setFeedback('Good') }
+    else { pts = 1; setFeedback('Off beat') }
+    const newScore = score + pts
+    setScore(newScore)
+    setShowTarget(false)
+    const nextIdx = targetIdx + 1
+    if (nextIdx >= PATTERN.length) {
+      onScore(newScore)
+      setTimeout(() => setPhase('results'), 600)
+    } else {
+      setTimeout(() => { setFeedback(''); runTarget(nextIdx) }, 600)
+    }
+  }
+
+  useEffect(() => () => clearTimeout(timerRef.current), [])
+
+  return (
+    <>
+      <button className="course-back" onClick={onBack}>← Back to Games</button>
+      <div className="card">
+        <h2>🌊 Breath Flow</h2>
+        <p className="sub">A glowing circle will pulse. Tap when it reaches full size. The closer your timing, the higher your score.</p>
+        <div className="rhythm-area" onClick={tap}>
+          {phase === 'ready' && (
+            <div style={{ textAlign: 'center' }}>
+              <div className="rhythm-circle idle">Ready</div>
+              <button className="btn" onClick={start} style={{ marginTop: 20 }}>Start</button>
+            </div>
+          )}
+          {phase === 'playing' && (
+            <div style={{ textAlign: 'center' }}>
+              <div className={`rhythm-circle ${showTarget ? 'pulse' : ''}`}>
+                {showTarget ? 'Tap!' : '...'}
+              </div>
+              <div className="rhythm-feedback">{feedback}</div>
+              <div className="sub" style={{ margin: '10px 0 0' }}>Score: {score} · Round {targetIdx + 1}/{PATTERN.length}</div>
+            </div>
+          )}
+          {phase === 'results' && (
+            <div style={{ textAlign: 'center' }}>
+              <div className="rhythm-circle idle">Done</div>
+              <div style={{ fontSize: '1.3rem', color: 'var(--sage-accent)', fontFamily: 'var(--font-serif)', marginTop: 16 }}>
+                Score: {score} / {PATTERN.length * 10}
+              </div>
+              {best > 0 && <div className="sub" style={{ margin: '4px 0 0' }}>Best: {best}</div>}
+              <button className="btn" onClick={start} style={{ marginTop: 12 }}>Play Again</button>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  )
+}
+
+// --- Word Unscramble ---
+const WORD_BANK = [
+  'CALM','PEACE','FOCUS','BREATHE','MINDFUL','BALANCE','GENTLE',
+  'GRATITUDE','SERENE','RESTORE','WELLNESS','NATURE','HARMONY',
+  'COURAGE','KINDNESS','PATIENCE','HEALING','STILLNESS','GROWTH','RESILIENCE'
+]
+
+function WordGame({ onBack, onScore, best }) {
+  const [wordIdx, setWordIdx] = useState(0)
+  const [scrambled, setScrambled] = useState('')
+  const [guess, setGuess] = useState('')
+  const [score, setScore] = useState(0)
+  const [round, setRound] = useState(1)
+  const [feedback, setFeedback] = useState('')
+  const [done, setDone] = useState(false)
+  const [words] = useState(() => [...WORD_BANK].sort(() => Math.random() - 0.5).slice(0, 8))
+  const TOTAL = 8
+
+  useEffect(() => {
+    scramble(words[0])
+  }, [])
+
+  const scramble = (word) => {
+    let s = word.split('').sort(() => Math.random() - 0.5).join('')
+    while (s === word && word.length > 1) s = word.split('').sort(() => Math.random() - 0.5).join('')
+    setScrambled(s)
+  }
+
+  const check = () => {
+    if (guess.trim().toUpperCase() === words[wordIdx]) {
+      const pts = score + 10
+      setScore(pts)
+      setFeedback('Correct!')
+      if (round >= TOTAL) {
+        onScore(pts)
+        setTimeout(() => setDone(true), 800)
+      } else {
+        setTimeout(() => {
+          const nextIdx = wordIdx + 1
+          setWordIdx(nextIdx)
+          scramble(words[nextIdx])
+          setGuess('')
+          setFeedback('')
+          setRound(r => r + 1)
+        }, 800)
+      }
+    } else {
+      setFeedback('Not quite — try again!')
+    }
+  }
+
+  const skip = () => {
+    setFeedback(`It was: ${words[wordIdx]}`)
+    if (round >= TOTAL) {
+      onScore(score)
+      setTimeout(() => setDone(true), 1200)
+    } else {
+      setTimeout(() => {
+        const nextIdx = wordIdx + 1
+        setWordIdx(nextIdx)
+        scramble(words[nextIdx])
+        setGuess('')
+        setFeedback('')
+        setRound(r => r + 1)
+      }, 1200)
+    }
+  }
+
+  const restart = () => {
+    const newWords = [...WORD_BANK].sort(() => Math.random() - 0.5).slice(0, 8)
+    words.splice(0, words.length, ...newWords)
+    setWordIdx(0); scramble(newWords[0]); setGuess(''); setScore(0); setRound(1); setFeedback(''); setDone(false)
+  }
+
+  return (
+    <>
+      <button className="course-back" onClick={onBack}>← Back to Games</button>
+      <div className="card">
+        <h2>🔤 Word Unscramble</h2>
+        {!done ? (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span className="sub" style={{ margin: 0 }}>Round {round}/{TOTAL}</span>
+              <span className="sub" style={{ margin: 0 }}>Score: {score}</span>
+            </div>
+            <div className="word-scramble">{scrambled}</div>
+            <input
+              className="input"
+              placeholder="Type your answer…"
+              value={guess}
+              onChange={e => setGuess(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') check() }}
+              autoFocus
+              style={{ marginTop: 16, textAlign: 'center', fontSize: '1.1rem', textTransform: 'uppercase' }}
+            />
+            {feedback && <div className="word-feedback">{feedback}</div>}
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <button className="btn full" onClick={check} disabled={!guess.trim()}>Check</button>
+              <button className="btn secondary" onClick={skip}>Skip</button>
+            </div>
+          </>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <div style={{ fontSize: '1.3rem', color: 'var(--sage-accent)', fontFamily: 'var(--font-serif)' }}>
+              Final score: {score} / {TOTAL * 10}
+            </div>
+            {best > 0 && <div className="sub" style={{ margin: '4px 0 0' }}>Best: {best}</div>}
+            <button className="btn" onClick={restart} style={{ marginTop: 12 }}>Play Again</button>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
+// --- Focus Tap ---
+function FocusGame({ onBack, onScore, best }) {
+  const ROUNDS = 15
+  const [phase, setPhase] = useState('ready')
+  const [targetPos, setTargetPos] = useState(null)
+  const [round, setRound] = useState(0)
+  const [score, setScore] = useState(0)
+  const [startTime, setStartTime] = useState(0)
+  const [lastReaction, setLastReaction] = useState(null)
+  const timerRef = useRef(null)
+  const areaRef = useRef(null)
+
+  const spawnTarget = () => {
+    const x = 10 + Math.random() * 75
+    const y = 10 + Math.random() * 75
+    setTargetPos({ x, y })
+    setStartTime(Date.now())
+    timerRef.current = setTimeout(() => {
+      setTargetPos(null)
+      setLastReaction(null)
+      if (round + 1 < ROUNDS) {
+        setRound(r => r + 1)
+        setTimeout(spawnTarget, 300 + Math.random() * 800)
+      } else {
+        onScore(score)
+        setPhase('results')
+      }
+    }, 1500)
+  }
+
+  const start = () => {
+    setPhase('playing'); setRound(0); setScore(0); setLastReaction(null)
+    setTimeout(spawnTarget, 500)
+  }
+
+  const hitTarget = () => {
+    clearTimeout(timerRef.current)
+    const reaction = Date.now() - startTime
+    setLastReaction(reaction)
+    let pts = 0
+    if (reaction < 300) pts = 10
+    else if (reaction < 500) pts = 7
+    else if (reaction < 800) pts = 4
+    else pts = 2
+    const newScore = score + pts
+    setScore(newScore)
+    setTargetPos(null)
+    const nextRound = round + 1
+    if (nextRound >= ROUNDS) {
+      onScore(newScore)
+      setTimeout(() => setPhase('results'), 400)
+    } else {
+      setRound(nextRound)
+      setTimeout(spawnTarget, 300 + Math.random() * 800)
+    }
+  }
+
+  useEffect(() => () => clearTimeout(timerRef.current), [])
+
+  return (
+    <>
+      <button className="course-back" onClick={onBack}>← Back to Games</button>
+      <div className="card">
+        <h2>🎯 Focus Tap</h2>
+        <p className="sub">Tap the green circles as fast as you can. Speed matters!</p>
+        {phase === 'ready' && (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <button className="btn" onClick={start}>Start</button>
+          </div>
+        )}
+        {phase === 'playing' && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span className="sub" style={{ margin: 0 }}>Round {round + 1}/{ROUNDS}</span>
+              <span className="sub" style={{ margin: 0 }}>Score: {score}</span>
+            </div>
+            {lastReaction && <div className="sub" style={{ margin: '0 0 4px', textAlign: 'center' }}>{lastReaction}ms</div>}
+            <div className="focus-area" ref={areaRef}>
+              {targetPos && (
+                <button
+                  className="focus-target"
+                  style={{ left: `${targetPos.x}%`, top: `${targetPos.y}%` }}
+                  onClick={hitTarget}
+                />
+              )}
+            </div>
+          </>
+        )}
+        {phase === 'results' && (
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <div style={{ fontSize: '1.3rem', color: 'var(--sage-accent)', fontFamily: 'var(--font-serif)' }}>
+              Score: {score} / {ROUNDS * 10}
+            </div>
+            {best > 0 && <div className="sub" style={{ margin: '4px 0 0' }}>Best: {best}</div>}
+            <button className="btn" onClick={start} style={{ marginTop: 12 }}>Play Again</button>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
+// --- Gem Crush (match-3) ---
+const GEM_COLS = 7
+const GEM_ROWS = 8
+const GEM_ICONS = ['🔮','💎','🌺','🍃','💧','☀️','🦋']
+
+function createBoard() {
+  const b = []
+  for (let r = 0; r < GEM_ROWS; r++) {
+    const row = []
+    for (let c = 0; c < GEM_COLS; c++) {
+      row.push(GEM_ICONS[Math.floor(Math.random() * GEM_ICONS.length)])
+    }
+    b.push(row)
+  }
+  return b
+}
+
+function findMatches(board) {
+  const matched = new Set()
+  // horizontal
+  for (let r = 0; r < GEM_ROWS; r++) {
+    for (let c = 0; c < GEM_COLS - 2; c++) {
+      const g = board[r][c]
+      if (g && g === board[r][c+1] && g === board[r][c+2]) {
+        let end = c + 2
+        while (end + 1 < GEM_COLS && board[r][end+1] === g) end++
+        for (let i = c; i <= end; i++) matched.add(`${r},${i}`)
+      }
+    }
+  }
+  // vertical
+  for (let c = 0; c < GEM_COLS; c++) {
+    for (let r = 0; r < GEM_ROWS - 2; r++) {
+      const g = board[r][c]
+      if (g && g === board[r+1][c] && g === board[r+2][c]) {
+        let end = r + 2
+        while (end + 1 < GEM_ROWS && board[end+1][c] === g) end++
+        for (let i = r; i <= end; i++) matched.add(`${i},${c}`)
+      }
+    }
+  }
+  return matched
+}
+
+function removeAndDrop(board, matched) {
+  const b = board.map(r => [...r])
+  // remove matched
+  matched.forEach(key => {
+    const [r, c] = key.split(',').map(Number)
+    b[r][c] = null
+  })
+  // gravity: drop nulls
+  for (let c = 0; c < GEM_COLS; c++) {
+    let writeRow = GEM_ROWS - 1
+    for (let r = GEM_ROWS - 1; r >= 0; r--) {
+      if (b[r][c] !== null) {
+        b[writeRow][c] = b[r][c]
+        if (writeRow !== r) b[r][c] = null
+        writeRow--
+      }
+    }
+    // fill empty top with new gems
+    for (let r = writeRow; r >= 0; r--) {
+      b[r][c] = GEM_ICONS[Math.floor(Math.random() * GEM_ICONS.length)]
+    }
+  }
+  return b
+}
+
+function settleBoard(board) {
+  let b = board.map(r => [...r])
+  let totalCleared = 0
+  let m = findMatches(b)
+  while (m.size > 0) {
+    totalCleared += m.size
+    b = removeAndDrop(b, m)
+    m = findMatches(b)
+  }
+  return { board: b, cleared: totalCleared }
+}
+
+function GemCrushGame({ onBack, onScore, best }) {
+  const TOTAL_MOVES = 25
+  const [board, setBoard] = useState(() => {
+    const { board: settled } = settleBoard(createBoard())
+    return settled
+  })
+  const [selected, setSelected] = useState(null)
+  const [score, setScore] = useState(0)
+  const [movesLeft, setMovesLeft] = useState(TOTAL_MOVES)
+  const [matched, setMatched] = useState(new Set())
+  const [gameOver, setGameOver] = useState(false)
+
+  const isAdjacent = (r1, c1, r2, c2) =>
+    (Math.abs(r1 - r2) + Math.abs(c1 - c2)) === 1
+
+  const handleTap = (r, c) => {
+    if (gameOver) return
+    if (!selected) {
+      setSelected({ r, c })
+      return
+    }
+    const { r: sr, c: sc } = selected
+    if (sr === r && sc === c) { setSelected(null); return }
+    if (!isAdjacent(sr, sc, r, c)) { setSelected({ r, c }); return }
+
+    // try swap
+    const b = board.map(row => [...row])
+    ;[b[sr][sc], b[r][c]] = [b[r][c], b[sr][sc]]
+    const m = findMatches(b)
+    if (m.size === 0) {
+      // invalid swap — revert
+      setSelected(null)
+      return
+    }
+    // valid swap
+    setMatched(m)
+    setSelected(null)
+    const ml = movesLeft - 1
+
+    setTimeout(() => {
+      const { board: settled, cleared } = settleBoard(b)
+      const pts = cleared * 10
+      const newScore = score + pts
+      setBoard(settled)
+      setScore(newScore)
+      setMovesLeft(ml)
+      setMatched(new Set())
+      if (ml <= 0) {
+        onScore(newScore)
+        setGameOver(true)
+      }
+    }, 250)
+  }
+
+  const restart = () => {
+    const { board: settled } = settleBoard(createBoard())
+    setBoard(settled)
+    setSelected(null)
+    setScore(0)
+    setMovesLeft(TOTAL_MOVES)
+    setMatched(new Set())
+    setGameOver(false)
+  }
+
+  return (
+    <>
+      <button className="course-back" onClick={onBack}>← Back to Games</button>
+      <div className="card">
+        <h2>💎 Gem Crush</h2>
+        <p className="sub">Swap adjacent gems to match 3 or more in a row.</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span className="sub" style={{ margin: 0 }}>Moves: {movesLeft}</span>
+          <span className="sub" style={{ margin: 0 }}>Score: {score}</span>
+        </div>
+        <div className="gem-grid">
+          {board.map((row, r) =>
+            row.map((gem, c) => (
+              <button
+                key={`${r}-${c}`}
+                className={
+                  'gem-cell' +
+                  (selected && selected.r === r && selected.c === c ? ' selected' : '') +
+                  (matched.has(`${r},${c}`) ? ' clearing' : '')
+                }
+                onClick={() => handleTap(r, c)}
+              >
+                {gem}
+              </button>
+            ))
+          )}
+        </div>
+        {gameOver && (
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <div style={{ fontSize: '1.3rem', color: 'var(--sage-accent)', fontFamily: 'var(--font-serif)' }}>
+              Score: {score}
+            </div>
+            {best > 0 && <div className="sub" style={{ margin: '4px 0 0' }}>Best: {best}</div>}
+            <button className="btn" onClick={restart} style={{ marginTop: 12 }}>Play Again</button>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
+// --- Zen Stack (Tetris-style) ---
+const ZS_COLS = 10
+const ZS_ROWS = 18
+const ZS_SHAPES = [
+  { blocks: [[0,0],[0,1],[1,0],[1,1]], color: '#f0c040' },           // O
+  { blocks: [[0,0],[0,1],[0,2],[0,3]], color: '#40c0e0' },           // I
+  { blocks: [[0,0],[1,0],[1,1],[1,2]], color: '#4080e0' },           // J
+  { blocks: [[0,2],[1,0],[1,1],[1,2]], color: '#e0a040' },           // L
+  { blocks: [[0,1],[0,2],[1,0],[1,1]], color: '#60c060' },           // S
+  { blocks: [[0,0],[0,1],[1,1],[1,2]], color: '#d05050' },           // Z
+  { blocks: [[0,1],[1,0],[1,1],[1,2]], color: '#a060d0' }            // T
+]
+
+function ZenStackGame({ onBack, onScore, best }) {
+  const boardRef = useRef(Array.from({ length: ZS_ROWS }, () => Array(ZS_COLS).fill(null)))
+  const pieceRef = useRef(null)
+  const posRef = useRef({ r: 0, c: 3 })
+  const scoreRef = useRef(0)
+  const gameOverRef = useRef(false)
+  const intervalRef = useRef(null)
+  const [, forceRender] = useState(0)
+  const [phase, setPhase] = useState('ready')
+  const [displayScore, setDisplayScore] = useState(0)
+  const canvasRef = useRef(null)
+
+  const rerender = () => forceRender(n => n + 1)
+
+  const randomPiece = () => {
+    const shape = ZS_SHAPES[Math.floor(Math.random() * ZS_SHAPES.length)]
+    return { blocks: shape.blocks.map(b => [...b]), color: shape.color }
+  }
+
+  const fits = (board, piece, pos) => {
+    return piece.blocks.every(([br, bc]) => {
+      const r = pos.r + br, c = pos.c + bc
+      return r >= 0 && r < ZS_ROWS && c >= 0 && c < ZS_COLS && !board[r][c]
+    })
+  }
+
+  const lockPiece = useCallback(() => {
+    const board = boardRef.current
+    const piece = pieceRef.current
+    const pos = posRef.current
+    piece.blocks.forEach(([br, bc]) => {
+      const r = pos.r + br, c = pos.c + bc
+      if (r >= 0 && r < ZS_ROWS) board[r][c] = piece.color
+    })
+    // clear full rows
+    let cleared = 0
+    for (let r = ZS_ROWS - 1; r >= 0; r--) {
+      if (board[r].every(cell => cell !== null)) {
+        board.splice(r, 1)
+        board.unshift(Array(ZS_COLS).fill(null))
+        cleared++
+        r++ // recheck same row
+      }
+    }
+    const linePts = [0, 40, 100, 300, 1200]
+    scoreRef.current += (linePts[cleared] || 0)
+    setDisplayScore(scoreRef.current)
+
+    // spawn next
+    const next = randomPiece()
+    const nextPos = { r: 0, c: Math.floor((ZS_COLS - 3) / 2) }
+    if (!fits(board, next, nextPos)) {
+      gameOverRef.current = true
+      clearInterval(intervalRef.current)
+      onScore(scoreRef.current)
+      setPhase('results')
+      return
+    }
+    pieceRef.current = next
+    posRef.current = nextPos
+    rerender()
+  }, [onScore])
+
+  const tick = useCallback(() => {
+    if (gameOverRef.current) return
+    const newPos = { r: posRef.current.r + 1, c: posRef.current.c }
+    if (fits(boardRef.current, pieceRef.current, newPos)) {
+      posRef.current = newPos
+      rerender()
+    } else {
+      lockPiece()
+    }
+  }, [lockPiece])
+
+  const start = () => {
+    boardRef.current = Array.from({ length: ZS_ROWS }, () => Array(ZS_COLS).fill(null))
+    pieceRef.current = randomPiece()
+    posRef.current = { r: 0, c: Math.floor((ZS_COLS - 3) / 2) }
+    scoreRef.current = 0
+    setDisplayScore(0)
+    gameOverRef.current = false
+    setPhase('playing')
+    rerender()
+    clearInterval(intervalRef.current)
+    intervalRef.current = setInterval(tick, 600)
+  }
+
+  const move = (dc) => {
+    if (gameOverRef.current) return
+    const newPos = { r: posRef.current.r, c: posRef.current.c + dc }
+    if (fits(boardRef.current, pieceRef.current, newPos)) {
+      posRef.current = newPos
+      rerender()
+    }
+  }
+
+  const rotate = () => {
+    if (gameOverRef.current) return
+    const piece = pieceRef.current
+    const rotated = piece.blocks.map(([r, c]) => [c, -r])
+    const minR = Math.min(...rotated.map(b => b[0]))
+    const minC = Math.min(...rotated.map(b => b[1]))
+    const normalized = rotated.map(([r, c]) => [r - minR, c - minC])
+    const testPiece = { blocks: normalized, color: piece.color }
+    if (fits(boardRef.current, testPiece, posRef.current)) {
+      pieceRef.current = testPiece
+      rerender()
+    }
+  }
+
+  const drop = () => {
+    if (gameOverRef.current) return
+    while (fits(boardRef.current, pieceRef.current, { r: posRef.current.r + 1, c: posRef.current.c })) {
+      posRef.current = { r: posRef.current.r + 1, c: posRef.current.c }
+    }
+    lockPiece()
+  }
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (phase !== 'playing') return
+      if (e.key === 'ArrowLeft') { e.preventDefault(); move(-1) }
+      if (e.key === 'ArrowRight') { e.preventDefault(); move(1) }
+      if (e.key === 'ArrowUp') { e.preventDefault(); rotate() }
+      if (e.key === 'ArrowDown') { e.preventDefault(); tick() }
+      if (e.key === ' ') { e.preventDefault(); drop() }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [phase, tick])
+
+  useEffect(() => () => clearInterval(intervalRef.current), [])
+
+  // Build display grid
+  const displayGrid = boardRef.current.map(r => [...r])
+  if (pieceRef.current && !gameOverRef.current) {
+    pieceRef.current.blocks.forEach(([br, bc]) => {
+      const r = posRef.current.r + br, c = posRef.current.c + bc
+      if (r >= 0 && r < ZS_ROWS && c >= 0 && c < ZS_COLS) {
+        displayGrid[r][c] = pieceRef.current.color
+      }
+    })
+  }
+
+  return (
+    <>
+      <button className="course-back" onClick={onBack}>← Back to Games</button>
+      <div className="card">
+        <h2>🧱 Zen Stack</h2>
+        <p className="sub">Stack the falling blocks and clear full lines.</p>
+        {phase === 'ready' && (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <button className="btn" onClick={start}>Start</button>
+          </div>
+        )}
+        {phase === 'playing' && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span className="sub" style={{ margin: 0 }}>Score: {displayScore}</span>
+            </div>
+            <div className="zen-board">
+              {displayGrid.map((row, r) =>
+                row.map((cell, c) => (
+                  <div
+                    key={`${r}-${c}`}
+                    className={'zen-cell' + (cell ? ' filled' : '')}
+                    style={cell ? { background: cell } : undefined}
+                  />
+                ))
+              )}
+            </div>
+            <div className="zen-controls">
+              <button className="zen-btn" onClick={() => move(-1)}>←</button>
+              <button className="zen-btn" onClick={rotate}>↻</button>
+              <button className="zen-btn" onClick={() => tick()}>↓</button>
+              <button className="zen-btn" onClick={drop}>⤓</button>
+              <button className="zen-btn" onClick={() => move(1)}>→</button>
+            </div>
+          </>
+        )}
+        {phase === 'results' && (
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <div style={{ fontSize: '1.3rem', color: 'var(--sage-accent)', fontFamily: 'var(--font-serif)' }}>
+              Score: {displayScore}
+            </div>
+            {best > 0 && <div className="sub" style={{ margin: '4px 0 0' }}>Best: {best}</div>}
+            <button className="btn" onClick={start} style={{ marginTop: 12 }}>Play Again</button>
+          </div>
+        )}
       </div>
     </>
   )
