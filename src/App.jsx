@@ -909,19 +909,21 @@ function MemoryGame({ onBack, onScore, best }) {
           <span className="sub" style={{ margin: 0 }}>Moves: {moves}</span>
           <span className="sub" style={{ margin: 0 }}>Matched: {matched.length / 2} / {SYMBOLS.length}</span>
         </div>
-        <div className="memory-grid">
-          {cards.map((c, i) => {
-            const isFlipped = flipped.includes(i) || matched.includes(i)
-            return (
-              <button
-                key={i}
-                className={`memory-cell ${isFlipped ? 'flipped' : ''} ${matched.includes(i) ? 'matched' : ''}`}
-                onClick={() => flip(i)}
-              >
-                {isFlipped ? c.symbol : '?'}
-              </button>
-            )
-          })}
+        <div className="memory-grid-wrapper">
+          <div className="memory-grid">
+            {cards.map((c, i) => {
+              const isFlipped = flipped.includes(i) || matched.includes(i)
+              return (
+                <button
+                  key={i}
+                  className={`memory-cell ${isFlipped ? 'flipped' : ''} ${matched.includes(i) ? 'matched' : ''}`}
+                  onClick={() => flip(i)}
+                >
+                  {isFlipped ? c.symbol : '?'}
+                </button>
+              )
+            })}
+          </div>
         </div>
         {finished && (
           <div style={{ textAlign: 'center', marginTop: 16 }}>
@@ -1403,22 +1405,24 @@ function GemCrushGame({ onBack, onScore, best }) {
           <span className="sub" style={{ margin: 0 }}>Moves: {movesLeft}</span>
           <span className="sub" style={{ margin: 0 }}>Score: {score}</span>
         </div>
-        <div className="gem-grid">
-          {board.map((row, r) =>
-            row.map((gem, c) => (
-              <button
-                key={`${r}-${c}`}
-                className={
-                  'gem-cell' +
-                  (selected && selected.r === r && selected.c === c ? ' selected' : '') +
-                  (matched.has(`${r},${c}`) ? ' clearing' : '')
-                }
-                onClick={() => handleTap(r, c)}
-              >
-                {gem}
-              </button>
-            ))
-          )}
+        <div className="gem-grid-wrapper">
+          <div className="gem-grid">
+            {board.map((row, r) =>
+              row.map((gem, c) => (
+                <button
+                  key={`${r}-${c}`}
+                  className={
+                    'gem-cell' +
+                    (selected && selected.r === r && selected.c === c ? ' selected' : '') +
+                    (matched.has(`${r},${c}`) ? ' clearing' : '')
+                  }
+                  onClick={() => handleTap(r, c)}
+                >
+                  {gem}
+                </button>
+              ))
+            )}
+          </div>
         </div>
         {gameOver && (
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
@@ -1607,16 +1611,18 @@ function ZenStackGame({ onBack, onScore, best }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
               <span className="sub" style={{ margin: 0 }}>Score: {displayScore}</span>
             </div>
-            <div className="zen-board">
-              {displayGrid.map((row, r) =>
-                row.map((cell, c) => (
-                  <div
-                    key={`${r}-${c}`}
-                    className={'zen-cell' + (cell ? ' filled' : '')}
-                    style={cell ? { background: cell } : undefined}
-                  />
-                ))
-              )}
+            <div className="zen-board-wrapper">
+              <div className="zen-board">
+                {displayGrid.map((row, r) =>
+                  row.map((cell, c) => (
+                    <div
+                      key={`${r}-${c}`}
+                      className={'zen-cell' + (cell ? ' filled' : '')}
+                      style={cell ? { background: cell } : undefined}
+                    />
+                  ))
+                )}
+              </div>
             </div>
             <div className="zen-controls">
               <button className="zen-btn" onClick={() => move(-1)}>←</button>
@@ -1644,7 +1650,7 @@ function ZenStackGame({ onBack, onScore, best }) {
 // --- Lily Hop (Frogger-style) ---
 const LH_COLS = 9
 const LH_ROWS = 13
-const LH_TICK = 200
+const LH_TICK = 450
 
 function buildLanes() {
   // Row 0 = goal, rows 1-5 = river (logs), row 6 = safe, rows 7-11 = road (cars), row 12 = start
@@ -1848,11 +1854,33 @@ function LilyHopGame({ onBack, onScore, best }) {
 
   const getCellClass = (r, c) => {
     const lane = lanes[r]
-    if (lane.type === 'goal') return 'lh-goal'
-    if (lane.type === 'safe' || lane.type === 'start') return 'lh-safe'
-    if (lane.type === 'road') return 'lh-road'
-    if (lane.type === 'river') return 'lh-water'
-    return ''
+    let cls = ''
+    if (lane.type === 'goal') cls = 'lh-goal'
+    else if (lane.type === 'safe' || lane.type === 'start') cls = 'lh-safe'
+    else if (lane.type === 'road') cls = 'lh-road'
+    else if (lane.type === 'river') cls = 'lh-water'
+
+    // 3D animation classes
+    if (frogR === r && frogC === c) cls += ' lh-cell-frog'
+    else if (lane.type === 'goal' && r === 0) cls += ' lh-cell-goal'
+    else if (lane.type === 'road') {
+      for (const item of lane.items) {
+        const ic = ((item.c % LH_COLS) + LH_COLS) % LH_COLS
+        for (let w = 0; w < item.w; w++) {
+          if (((ic + w) % LH_COLS) === c) { cls += ' lh-cell-car'; break }
+        }
+      }
+    } else if (lane.type === 'river') {
+      let isLog = false
+      for (const item of lane.items) {
+        const ic = ((item.c % LH_COLS) + LH_COLS) % LH_COLS
+        for (let w = 0; w < item.w; w++) {
+          if (((ic + w) % LH_COLS) === c) { isLog = true; break }
+        }
+      }
+      cls += isLog ? ' lh-cell-log' : ' lh-cell-wave'
+    }
+    return cls
   }
 
   return (
@@ -1872,14 +1900,16 @@ function LilyHopGame({ onBack, onScore, best }) {
               <span className="sub" style={{ margin: 0 }}>Lives: {'🐸'.repeat(lives)}</span>
               <span className="sub" style={{ margin: 0 }}>Score: {score}</span>
             </div>
-            <div className="lh-board">
-              {Array.from({ length: LH_ROWS }, (_, r) =>
-                Array.from({ length: LH_COLS }, (_, c) => (
-                  <div key={`${r}-${c}`} className={`lh-cell ${getCellClass(r, c)}`}>
-                    {getCellContent(r, c)}
-                  </div>
-                ))
-              )}
+            <div className="lh-wrapper">
+              <div className="lh-board">
+                {Array.from({ length: LH_ROWS }, (_, r) =>
+                  Array.from({ length: LH_COLS }, (_, c) => (
+                    <div key={`${r}-${c}`} className={`lh-cell ${getCellClass(r, c)}`}>
+                      {getCellContent(r, c)}
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
             <div className="zen-controls" style={{ marginTop: 12 }}>
               <button className="zen-btn" onClick={() => moveFrog(0, -1)}>←</button>

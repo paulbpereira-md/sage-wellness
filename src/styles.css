@@ -513,15 +513,17 @@ input, textarea { font-family: inherit; }
   display: flex;
   align-items: center;
   gap: 14px;
-  background: #fff;
+  background: linear-gradient(145deg, #fff, #f8faf8);
   border-radius: 14px;
   padding: 16px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06);
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.25s, box-shadow 0.25s;
+  transform: perspective(600px) rotateY(0deg);
 }
 .game-card:active {
-  transform: scale(0.97);
+  transform: perspective(600px) rotateY(-3deg) scale(0.97);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .game-card-emoji {
@@ -531,9 +533,15 @@ input, textarea { font-family: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--sage-bg);
+  background: linear-gradient(135deg, var(--sage-bg), #e8f0e8);
   border-radius: 12px;
   flex-shrink: 0;
+  box-shadow: inset 0 -2px 4px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.08);
+  animation: emojiIdle 4s ease-in-out infinite;
+}
+@keyframes emojiIdle {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-2px) scale(1.04); }
 }
 
 .game-card-info {
@@ -630,37 +638,60 @@ input, textarea { font-family: inherit; }
 }
 
 /* ── Memory Match ── */
+.memory-grid-wrapper {
+  perspective: 800px;
+  max-width: 320px;
+  margin: 0 auto;
+}
 .memory-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  max-width: 320px;
-  margin: 0 auto;
+  transform: rotateX(8deg);
+  transform-origin: center bottom;
+  transform-style: preserve-3d;
 }
 
 .memory-cell {
   aspect-ratio: 1;
   border-radius: 12px;
-  background: var(--sage-accent);
+  background: linear-gradient(145deg, var(--sage-accent), #5a8a6a);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.6rem;
   cursor: pointer;
-  transition: transform 0.25s, background 0.25s;
+  transition: transform 0.4s, background 0.3s, box-shadow 0.3s;
+  transform-style: preserve-3d;
   color: transparent;
   user-select: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.memory-cell:hover {
+  transform: translateZ(6px) scale(1.04);
 }
 .memory-cell.flipped,
 .memory-cell.matched {
-  background: #fff;
+  background: linear-gradient(145deg, #fff, #f0f4f8);
   color: inherit;
-  box-shadow: var(--shadow);
-  transform: rotateY(0deg);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.5);
+  transform: rotateY(360deg) translateZ(8px);
+  animation: cardFlip3D 0.4s ease;
 }
 .memory-cell.matched {
-  background: #e8f5e9;
+  background: linear-gradient(145deg, #e8f5e9, #c8e6c9);
   opacity: 0.85;
+  animation: matchGlow 0.6s ease;
+}
+@keyframes cardFlip3D {
+  0%   { transform: rotateY(0deg) translateZ(0); }
+  50%  { transform: rotateY(180deg) translateZ(14px); }
+  100% { transform: rotateY(360deg) translateZ(8px); }
+}
+@keyframes matchGlow {
+  0%   { box-shadow: 0 0 0 rgba(76,175,80,0); }
+  50%  { box-shadow: 0 0 20px rgba(76,175,80,0.5); }
+  100% { box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
 }
 
 /* ── Breath Rhythm ── */
@@ -670,13 +701,14 @@ input, textarea { font-family: inherit; }
   align-items: center;
   gap: 20px;
   padding: 20px 0;
+  perspective: 500px;
 }
 
 .rhythm-circle {
   width: 140px;
   height: 140px;
   border-radius: 50%;
-  background: var(--sage-bg);
+  background: radial-gradient(circle at 35% 35%, #f0f7f4, var(--sage-bg));
   border: 4px solid var(--sage-accent);
   display: flex;
   align-items: center;
@@ -684,19 +716,22 @@ input, textarea { font-family: inherit; }
   font-size: 1rem;
   font-weight: 600;
   color: var(--sage-muted);
-  transition: transform 0.3s, background 0.3s, border-color 0.3s;
+  transition: transform 0.4s ease, background 0.4s, border-color 0.3s, box-shadow 0.4s;
   cursor: pointer;
   user-select: none;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15), inset 0 -4px 8px rgba(0,0,0,0.05);
 }
 .rhythm-circle.pulse {
-  transform: scale(1.18);
-  background: var(--sage-accent);
+  transform: scale(1.25) translateZ(20px);
+  background: radial-gradient(circle at 35% 35%, #8bc9a0, var(--sage-accent));
   color: #fff;
   border-color: var(--sage-accent);
+  box-shadow: 0 15px 40px rgba(106,168,130,0.4), 0 0 30px rgba(106,168,130,0.2);
 }
 .rhythm-circle.idle {
-  background: var(--sage-bg);
+  background: radial-gradient(circle at 35% 35%, #f0f7f4, var(--sage-bg));
   color: var(--sage-muted);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .rhythm-feedback {
@@ -714,14 +749,21 @@ input, textarea { font-family: inherit; }
 .word-scramble {
   text-align: center;
   padding: 20px 0;
+  perspective: 600px;
 }
 .word-scramble .scrambled {
   font-size: 1.8rem;
   font-weight: 700;
-  letter-spacing: 4px;
+  letter-spacing: 6px;
   color: var(--sage-accent);
   margin-bottom: 18px;
   font-family: var(--font-serif);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.12), 0 4px 12px rgba(106,168,130,0.15);
+  animation: letterFloat 3s ease-in-out infinite;
+}
+@keyframes letterFloat {
+  0%, 100% { transform: translateY(0) rotateX(0deg); }
+  50%      { transform: translateY(-4px) rotateX(4deg); }
 }
 .word-scramble input {
   width: 200px;
@@ -766,10 +808,12 @@ input, textarea { font-family: inherit; }
   position: relative;
   width: 100%;
   height: 300px;
-  background: var(--sage-bg);
+  background: linear-gradient(135deg, var(--sage-bg), #e8f0e8);
   border-radius: 14px;
   overflow: hidden;
   margin-top: 10px;
+  perspective: 500px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .focus-target {
@@ -777,78 +821,102 @@ input, textarea { font-family: inherit; }
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: #4caf50;
+  background: radial-gradient(circle at 35% 35%, #66bb6a, #388e3c);
   cursor: pointer;
   transition: transform 0.1s;
-  animation: focusPop 0.2s ease-out;
+  animation: focusPop3D 0.35s ease-out;
+  box-shadow: 0 6px 16px rgba(56,142,60,0.4), inset 0 -2px 4px rgba(0,0,0,0.15), inset 0 2px 4px rgba(255,255,255,0.25);
 }
 .focus-target:active {
-  transform: scale(0.85);
+  transform: scale(0.75) translateZ(-5px);
+  box-shadow: 0 2px 6px rgba(56,142,60,0.3);
 }
 
-@keyframes focusPop {
-  0%   { transform: scale(0); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+@keyframes focusPop3D {
+  0%   { transform: scale(0) translateZ(-20px); opacity: 0; }
+  60%  { transform: scale(1.15) translateZ(10px); opacity: 1; }
+  100% { transform: scale(1) translateZ(0); opacity: 1; }
 }
 
 /* ── Gem Crush ── */
+.gem-grid-wrapper {
+  perspective: 700px;
+  max-width: 320px;
+  margin: 0 auto;
+}
 .gem-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 3px;
-  max-width: 320px;
-  margin: 0 auto;
+  transform: rotateX(6deg);
+  transform-origin: center bottom;
+  transform-style: preserve-3d;
 }
 
 .gem-cell {
   aspect-ratio: 1;
   border-radius: 8px;
-  background: var(--sage-bg);
+  background: linear-gradient(145deg, #f8f8f8, var(--sage-bg));
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.35rem;
   cursor: pointer;
-  transition: transform 0.15s, background 0.15s, opacity 0.2s;
+  transition: transform 0.2s, background 0.2s, opacity 0.25s, box-shadow 0.2s;
   user-select: none;
   padding: 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 .gem-cell:active {
-  transform: scale(0.88);
+  transform: scale(0.88) translateZ(-4px);
 }
 .gem-cell.selected {
   background: #e0e7ff;
-  box-shadow: 0 0 0 2px var(--sage-accent);
-  transform: scale(1.08);
+  box-shadow: 0 0 0 2px var(--sage-accent), 0 6px 18px rgba(106,168,130,0.3);
+  transform: scale(1.1) translateZ(10px);
+  animation: gemBounce 0.3s ease;
 }
 .gem-cell.clearing {
-  opacity: 0.3;
-  transform: scale(0.6);
+  opacity: 0;
+  transform: scale(0.3) translateZ(-20px) rotateZ(45deg);
+}
+@keyframes gemBounce {
+  0%   { transform: scale(1) translateZ(0); }
+  50%  { transform: scale(1.18) translateZ(14px); }
+  100% { transform: scale(1.1) translateZ(10px); }
 }
 
 /* ── Zen Stack (Tetris) ── */
+.zen-board-wrapper {
+  perspective: 600px;
+  max-width: 260px;
+  margin: 0 auto;
+}
 .zen-board {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   gap: 1px;
-  max-width: 260px;
-  margin: 0 auto;
-  background: var(--sage-bg);
+  background: linear-gradient(180deg, #e8e8e8, var(--sage-bg));
   border-radius: 10px;
   padding: 4px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #d0d0d0;
+  transform: rotateX(10deg);
+  transform-origin: center bottom;
+  transform-style: preserve-3d;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.3);
 }
 
 .zen-cell {
   aspect-ratio: 1;
   border-radius: 3px;
   background: #f5f5f5;
-  transition: background 0.1s;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 .zen-cell.filled {
   border-radius: 3px;
-  box-shadow: inset 0 -1px 1px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.25);
+  box-shadow: inset 0 -2px 2px rgba(0,0,0,0.2), inset 0 2px 2px rgba(255,255,255,0.3), 0 1px 3px rgba(0,0,0,0.1);
+  transform: translateZ(3px);
 }
 
 .zen-controls {
@@ -878,15 +946,25 @@ input, textarea { font-family: inherit; }
 }
 
 /* ── Lily Hop (Frogger) ── */
+.lh-wrapper {
+  perspective: 600px;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
 .lh-board {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
   gap: 1px;
-  max-width: 300px;
-  margin: 0 auto;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   border: 2px solid #c8d6c0;
+  transform: rotateX(18deg) scale(0.95);
+  transform-origin: center bottom;
+  box-shadow:
+    0 12px 30px rgba(0,0,0,0.2),
+    0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
 }
 
 .lh-cell {
@@ -896,15 +974,70 @@ input, textarea { font-family: inherit; }
   justify-content: center;
   font-size: 0.95rem;
   user-select: none;
+  transition: transform 0.35s ease, background 0.3s;
+  position: relative;
 }
+
+/* Frog emoji pops up in 3D */
+.lh-cell-frog {
+  transform: translateZ(12px) scale(1.25);
+  z-index: 5;
+  filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35));
+  animation: frogBounce 0.35s ease;
+}
+@keyframes frogBounce {
+  0%   { transform: translateZ(0) scale(1); }
+  40%  { transform: translateZ(20px) scale(1.35); }
+  100% { transform: translateZ(12px) scale(1.25); }
+}
+
+/* Cars have shadow + slight lift */
+.lh-cell-car {
+  filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.4));
+  animation: carDrift 0.45s ease;
+}
+@keyframes carDrift {
+  0%   { transform: translateZ(0); }
+  100% { transform: translateZ(4px); }
+}
+
+/* Logs bob gently */
+.lh-cell-log {
+  animation: logBob 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
+}
+@keyframes logBob {
+  0%, 100% { transform: translateY(0) translateZ(2px); }
+  50%      { transform: translateY(-1px) translateZ(4px); }
+}
+
+/* Water ripple shimmer */
+.lh-cell-wave {
+  animation: waterShimmer 2.5s ease-in-out infinite;
+}
+@keyframes waterShimmer {
+  0%, 100% { background: #64b5f6; }
+  50%      { background: #42a5f5; }
+}
+
+/* Goal flowers pulse */
+.lh-cell-goal {
+  animation: flowerPulse 2s ease-in-out infinite;
+}
+@keyframes flowerPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.15) translateZ(6px); }
+}
+
 .lh-safe, .lh-cell:not(.lh-road):not(.lh-water):not(.lh-goal) {
-  background: #c8e6c9;
+  background: linear-gradient(135deg, #c8e6c9, #a5d6a7);
 }
 .lh-goal {
-  background: #a5d6a7;
+  background: linear-gradient(135deg, #a5d6a7, #81c784);
 }
 .lh-road {
-  background: #616161;
+  background: linear-gradient(180deg, #555, #616161);
+  border-bottom: 1px dashed rgba(255,255,255,0.15);
 }
 .lh-water {
   background: #64b5f6;
