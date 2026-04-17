@@ -1340,7 +1340,7 @@ function GemCrushGame({ onBack, onScore, best }) {
   const [gameOver, setGameOver] = useState(false)
 
   const isAdjacent = (r1, c1, r2, c2) =>
-    (Math.abs(r1 - r2) + Math.abs(c1 - c2)) === 1
+    Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1 && (r1 !== r2 || c1 !== c2)
 
   const handleTap = (r, c) => {
     if (gameOver) return
