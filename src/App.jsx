@@ -625,7 +625,7 @@ function Plan() {
 function Courses() {
   const [detailId, setDetailId] = useState(null)
   const [enrolled, setEnrolled] = useState(() => storage.get('courses.enrolled', []))
-  const [purchaseMsg, setPurchaseMsg] = useState(null)
+  const [purchasedCourse, setPurchasedCourse] = useState(null)
 
   // Handle Stripe payment success redirect
   useEffect(() => {
@@ -639,11 +639,9 @@ function Courses() {
         storage.set('courses.enrolled', next)
       }
       const course = COURSES.find(c => c.id === purchasedId)
-      setPurchaseMsg(`🎉 ${course.name} unlocked! All lessons are now available.`)
+      setPurchasedCourse(course)
       // Clean up URL
       window.history.replaceState({}, '', window.location.pathname)
-      // Auto-dismiss after 6 seconds
-      setTimeout(() => setPurchaseMsg(null), 6000)
     }
   }, [])
 
@@ -664,6 +662,39 @@ function Courses() {
     if (discountPct === 0) return { final: price, saved: 0 }
     const final = Math.round(price * (1 - discountPct / 100) * 100) / 100
     return { final, saved: Math.round((price - final) * 100) / 100 }
+  }
+
+  // Purchase confirmation page
+  if (purchasedCourse) {
+    return (
+      <div className="purchase-confirm">
+        <div className="purchase-confirm-icon">✅</div>
+        <h2 style={{ fontFamily: 'var(--font-serif)', margin: '12px 0 6px' }}>Payment Successful!</h2>
+        <p className="sub" style={{ margin: '0 0 20px' }}>Thank you for your purchase.</p>
+        <div className="card" style={{ textAlign: 'left', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+            <span style={{ fontSize: '2rem' }}>{purchasedCourse.emoji}</span>
+            <div>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', fontWeight: 600 }}>{purchasedCourse.name}</div>
+              <div className="sub" style={{ margin: 0 }}>{purchasedCourse.cat}</div>
+            </div>
+          </div>
+          <p style={{ fontSize: '0.85rem', color: 'var(--sage-muted)', margin: '0 0 8px' }}>
+            All {purchasedCourse.lessons.length} lessons are now unlocked. You have lifetime access.
+          </p>
+        </div>
+        <button className="btn full" onClick={() => { setPurchasedCourse(null); setDetailId(purchasedCourse.id) }}>
+          Start Learning →
+        </button>
+        <button
+          className="btn full"
+          style={{ background: 'var(--sage-bg)', color: 'var(--sage-text)', marginTop: 8 }}
+          onClick={() => setPurchasedCourse(null)}
+        >
+          Browse More Courses
+        </button>
+      </div>
+    )
   }
 
   if (detailId) {
@@ -769,11 +800,6 @@ function Courses() {
 
   return (
     <>
-      {purchaseMsg && (
-        <div className="card" style={{ background: '#e8f5e9', border: '1px solid #81c784', marginBottom: 12 }}>
-          <p style={{ margin: 0, color: '#2e7d32', fontWeight: 600 }}>{purchaseMsg}</p>
-        </div>
-      )}
       {discountPct > 0 && (
         <div className="discount-banner">
           🎉 You've unlocked <strong>{discountPct}% off</strong> your next course!

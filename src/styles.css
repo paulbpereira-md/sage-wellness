@@ -361,6 +361,27 @@ input, textarea { font-family: inherit; }
 .course-price.free { color: var(--sage-accent); }
 .course-lessons-count { color: var(--sage-muted); font-size: 0.78rem; }
 
+/* ── Purchase Confirmation ── */
+.purchase-confirm {
+  text-align: center;
+  padding: 40px 16px 20px;
+  animation: confirmFadeIn 0.5s ease;
+}
+.purchase-confirm-icon {
+  font-size: 3.5rem;
+  margin-bottom: 4px;
+  animation: confirmPop 0.6s ease;
+}
+@keyframes confirmFadeIn {
+  0%   { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes confirmPop {
+  0%   { transform: scale(0); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
 .course-back {
   color: var(--sage-muted);
   font-size: 0.85rem;
