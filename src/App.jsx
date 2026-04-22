@@ -46,7 +46,7 @@ const COURSES = [
   {
     id: 'strength', emoji: '💪', cat: 'Fitness', name: 'Strength Without the Gym',
     price: 9.99, free: false,
-    payLink: 'https://buy.stripe.com/aFa6oJbnL1ZIeDxfeV7wA00',
+    payLink: 'https://buy.stripe.com/test_aFa6oJbnL1ZIeDxfeV7wA00',
     desc: 'A complete bodyweight strength training system built on progressive overload. No equipment needed.',
     meta: ['24 lessons', '6 hours', '4.8 stars (189 reviews)', 'Lifetime access'],
     lessons: [
@@ -63,7 +63,7 @@ const COURSES = [
   {
     id: 'nutrition', emoji: '🥗', cat: 'Nutrition', name: 'Eat to Thrive',
     price: 14.99, free: false,
-    payLink: 'https://buy.stripe.com/5kQaEZ4Zn1ZI0MHfeV7wA01',
+    payLink: 'https://buy.stripe.com/test_5kQaEZ4Zn1ZI0MHfeV7wA01',
     desc: 'A science-backed nutrition system focused on anti-inflammatory eating, gut health, and building sustainable habits.',
     meta: ['18 lessons', '4.5 hours', '4.9 stars (97 reviews)', 'Lifetime access'],
     lessons: [
@@ -80,7 +80,7 @@ const COURSES = [
   {
     id: 'sleep', emoji: '😴', cat: 'Sleep and Recovery', name: 'Deep Sleep Protocol',
     price: 9.99, free: false,
-    payLink: 'https://buy.stripe.com/7sY9AV1Nb5bU7b52s97wA02',
+    payLink: 'https://buy.stripe.com/test_7sY9AV1Nb5bU7b52s97wA02',
     desc: 'A comprehensive sleep optimization system backed by circadian biology. Fall asleep faster, stay asleep longer, wake up refreshed.',
     meta: ['12 lessons', '3 hours', '4.7 stars (143 reviews)', 'Lifetime access'],
     lessons: [
@@ -97,7 +97,7 @@ const COURSES = [
   {
     id: 'rewire', emoji: '🌱', cat: 'Habit Building', name: 'The 90-Day Rewire',
     price: 19.99, free: false,
-    payLink: 'https://buy.stripe.com/3cIbJ3bnLfQy6714Ah7wA03',
+    payLink: 'https://buy.stripe.com/test_3cIbJ3bnLfQy6714Ah7wA03',
     desc: 'A neuroscience-backed habit transformation system to build 3-5 keystone habits in 90 days.',
     meta: ['30 lessons', '8 hours', '4.9 stars (62 reviews)', 'Lifetime access'],
     lessons: [
