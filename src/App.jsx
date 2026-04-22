@@ -46,6 +46,7 @@ const COURSES = [
   {
     id: 'strength', emoji: '💪', cat: 'Fitness', name: 'Strength Without the Gym',
     price: 9.99, free: false,
+    payLink: 'https://buy.stripe.com/aFa6oJbnL1ZIeDxfeV7wA00',
     desc: 'A complete bodyweight strength training system built on progressive overload. No equipment needed.',
     meta: ['24 lessons', '6 hours', '4.8 stars (189 reviews)', 'Lifetime access'],
     lessons: [
@@ -62,6 +63,7 @@ const COURSES = [
   {
     id: 'nutrition', emoji: '🥗', cat: 'Nutrition', name: 'Eat to Thrive',
     price: 14.99, free: false,
+    payLink: 'https://buy.stripe.com/5kQaEZ4Zn1ZI0MHfeV7wA01',
     desc: 'A science-backed nutrition system focused on anti-inflammatory eating, gut health, and building sustainable habits.',
     meta: ['18 lessons', '4.5 hours', '4.9 stars (97 reviews)', 'Lifetime access'],
     lessons: [
@@ -78,6 +80,7 @@ const COURSES = [
   {
     id: 'sleep', emoji: '😴', cat: 'Sleep and Recovery', name: 'Deep Sleep Protocol',
     price: 9.99, free: false,
+    payLink: 'https://buy.stripe.com/7sY9AV1Nb5bU7b52s97wA02',
     desc: 'A comprehensive sleep optimization system backed by circadian biology. Fall asleep faster, stay asleep longer, wake up refreshed.',
     meta: ['12 lessons', '3 hours', '4.7 stars (143 reviews)', 'Lifetime access'],
     lessons: [
@@ -94,6 +97,7 @@ const COURSES = [
   {
     id: 'rewire', emoji: '🌱', cat: 'Habit Building', name: 'The 90-Day Rewire',
     price: 19.99, free: false,
+    payLink: 'https://buy.stripe.com/3cIbJ3bnLfQy6714Ah7wA03',
     desc: 'A neuroscience-backed habit transformation system to build 3-5 keystone habits in 90 days.',
     meta: ['30 lessons', '8 hours', '4.9 stars (62 reviews)', 'Lifetime access'],
     lessons: [
@@ -621,6 +625,27 @@ function Plan() {
 function Courses() {
   const [detailId, setDetailId] = useState(null)
   const [enrolled, setEnrolled] = useState(() => storage.get('courses.enrolled', []))
+  const [purchaseMsg, setPurchaseMsg] = useState(null)
+
+  // Handle Stripe payment success redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const purchasedId = params.get('purchased')
+    if (purchasedId && COURSES.find(c => c.id === purchasedId)) {
+      // Unlock the course
+      if (!enrolled.includes(purchasedId)) {
+        const next = [...enrolled, purchasedId]
+        setEnrolled(next)
+        storage.set('courses.enrolled', next)
+      }
+      const course = COURSES.find(c => c.id === purchasedId)
+      setPurchaseMsg(`🎉 ${course.name} unlocked! All lessons are now available.`)
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname)
+      // Auto-dismiss after 6 seconds
+      setTimeout(() => setPurchaseMsg(null), 6000)
+    }
+  }, [])
 
   const openDetail = (id) => { setDetailId(id) }
   const backToBrowse = () => { setDetailId(null) }
@@ -711,9 +736,27 @@ function Courses() {
                     One-time payment · Lifetime access.
                     {hasDiscount && ` You save $${saved.toFixed(2)}!`}
                   </div>
-                  <button className="btn full warm" disabled>Checkout coming soon</button>
+                  {isEnrolled ? (
+                    <button className="btn full" disabled>✓ Purchased</button>
+                  ) : (
+                    <button
+                      className="btn full warm"
+                      onClick={() => {
+                        const successUrl = encodeURIComponent(window.location.origin + '?purchased=' + c.id)
+                        const cancelUrl = encodeURIComponent(window.location.origin)
+                        window.open(
+                          c.payLink + '?prefilled_email=' + encodeURIComponent('') +
+                          '&success_url=' + successUrl +
+                          '&cancel_url=' + cancelUrl,
+                          '_blank'
+                        )
+                      }}
+                    >
+                      Buy Now — ${hasDiscount ? final.toFixed(2) : c.price}
+                    </button>
+                  )}
                   <p className="sub" style={{ marginTop: 10, marginBottom: 0, fontSize: '0.78rem' }}>
-                    Paid checkout needs Stripe setup. Free lessons are unlocked above.
+                    Secure checkout powered by Stripe. One-time purchase.
                   </p>
                 </>
               )
@@ -726,6 +769,11 @@ function Courses() {
 
   return (
     <>
+      {purchaseMsg && (
+        <div className="card" style={{ background: '#e8f5e9', border: '1px solid #81c784', marginBottom: 12 }}>
+          <p style={{ margin: 0, color: '#2e7d32', fontWeight: 600 }}>{purchaseMsg}</p>
+        </div>
+      )}
       {discountPct > 0 && (
         <div className="discount-banner">
           🎉 You've unlocked <strong>{discountPct}% off</strong> your next course!
